@@ -20,7 +20,8 @@ from ecommerce import views
 
 router = routers.DefaultRouter()
 router.register(r'users', views.UserViewSet)
-router.register(r'Groups', views.GroupViewSet)
+router.register(r'groups', views.GroupViewSet)
+router.register(r'items', views.ItemViewSet)
 
 
 urlpatterns = [
