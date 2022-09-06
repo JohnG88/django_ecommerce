@@ -11,8 +11,8 @@ const Detail = () => {
         getItem();
     }, [itemId]);
     
-     const getItem = async () => {
-        const response = await fetch(`http://127.0.0.1:8000/items/${itemId}`);
+  const getItem = async () => {
+  const response = await fetch(`http://127.0.0.1:8000/items/${itemId}`);
 	const data = await response.json();
 	console.log("Data", data);
 	setItem(data);
@@ -20,15 +20,15 @@ const Detail = () => {
      return (
         <div className="items">
             <div className="items-header">
-	        <h2 className="items-title">Items</h2>
-	    </div>
-	    <div className="notes-list">
-	        <div>
-	            <ItemList key={item.id} item={item} />
-	            <button>Purchase Item</button>
-		</div>
-	    </div>
-	</div>
+	              <h2 className="items-title">Items</h2>
+	          </div>
+	          <div className="notes-list">
+	              <div>
+	                  <ItemList key={item.id} item={item} />
+                  <Link to={`/order-item/${item.id}`}><button>Purchase Item</button></Link>
+		            </div>
+	          </div>
+	     </div>
     );
     
 }

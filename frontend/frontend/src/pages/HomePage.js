@@ -25,7 +25,7 @@ const HomePage = () => {
 	    <div className="notes-list">
 	        {items.map((item) => {
 		    return (
-			<div>
+			<div key={item.id}>
 	                    <ItemList key={item.id} item={item} />
 			    <Link to={`/detail/${item.id}`}>Detail View</Link>
 			</div>

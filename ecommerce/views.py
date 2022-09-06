@@ -39,6 +39,11 @@ class OrderViewSet(viewsets.ModelViewSet):
 class OrderItemViewSet(viewsets.ModelViewSet):
     queryset = OrderItem.objects.all()
     serializer_class = OrderItemSerializer
+    
+   # def get_queryset(self):
+        #user = self.request.user
+        #return OrderItem.objects.filter(customer=user.id)
+
 
 class ShippingAddressViewSet(viewsets.ModelViewSet):
     queryset = ShippingAddress.objects.all()

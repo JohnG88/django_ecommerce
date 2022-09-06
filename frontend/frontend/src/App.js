@@ -5,8 +5,8 @@ import HomePage from "./pages/HomePage";
 function App() {
   return (
     <div className="App">
-	<Link to="/HomePage">Item Lists</Link>
-	<Outlet />
+        <Link to="/HomePage">Item Lists</Link>
+	      <Outlet />
     </div>
   );
 }

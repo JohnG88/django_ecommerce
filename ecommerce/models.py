@@ -32,7 +32,7 @@ class Item(models.Model):
         return f'{self.name} | {self.price} | {self.stock} | {self.sold}'
 
 class OrderItem(models.Model):
-    cusomer = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    customer = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     ordered = models.BooleanField(default=False)
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     quantity = models.IntegerField(default=1)

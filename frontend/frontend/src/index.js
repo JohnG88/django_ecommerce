@@ -6,6 +6,8 @@ import App from './App';
 
 import HomePage from './pages/HomePage';
 import Detail from './pages/Detail';
+import AddOrder from './pages/AddOrder';
+import ItemCart from './pages/ItemCart';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -15,13 +17,15 @@ root.render(
               <Route path="/" element={<App />}>
                   <Route path="homepage" element={<HomePage />} />
                   <Route path="/detail/:detailId" element={<Detail />} />
-	          <Route path="*" element={
-			              <div style={{ padding: "1rem"}}>
-		                           <p>There is nothing here!</p>
-			              </div>
+                  <Route path="/order-item/" element={<ItemCart />} />
+                  <Route path="/order-item/:savedId" element={<AddOrder />} />
+	                <Route path="*" element={
+			                <div style={{ padding: "1rem"}}>
+		                      <p>There is nothing here!</p>
+			                </div>
 		                  }
-	         />
-	      </Route>
+	                />
+	           </Route>
           </Routes>
       </BrowserRouter>
   </React.StrictMode>
