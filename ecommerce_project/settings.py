@@ -131,7 +131,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+        #'rest_framework.authentication.SessionAuthentication',
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10
@@ -139,9 +140,31 @@ REST_FRAMEWORK = {
 
 
 
-#CORS_ALLOWED_ORIGINS = [
-#    "http://127.0.0.1:8000",
+CORS_ALLOWED_ORIGINS = [
+    "http://127.0.0.1:8000",
+    "http://127.0.0.1:3000",
+    "http://localhost:3000",
+    "http://localhost:8000",
+   # "http://localhost:3000/Login",
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+    "http://localhost:8000",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:8000",
+    "http://localhost:3000/Login",
+]
+
+#CSRF_COOKIE_DOMAIN = [
+#    '127.0.0.1',
 #]
 
-CORS_ALLOW_ALL_ORIGINS = True
+#SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'http')
+#CSRF_COOKIE_SECURE = False
+#CORS_ALLOW_ALL_ORIGINS = True
+
+SESSION_COOKIE_SAMESITE = None
+CSRF_COOKIE_SAMESITE = None
+
 AUTH_USER_MODEL = 'ecommerce.CustomUser'

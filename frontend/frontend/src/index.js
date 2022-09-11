@@ -8,6 +8,7 @@ import HomePage from './pages/HomePage';
 import Detail from './pages/Detail';
 import AddOrder from './pages/AddOrder';
 import ItemCart from './pages/ItemCart';
+import Login from './pages/LoginPage';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -15,6 +16,7 @@ root.render(
       <BrowserRouter>
           <Routes>
               <Route path="/" element={<App />}>
+                  <Route path="login" element={<Login />} />
                   <Route path="homepage" element={<HomePage />} />
                   <Route path="/detail/:detailId" element={<Detail />} />
                   <Route path="/order-item/" element={<ItemCart />} />

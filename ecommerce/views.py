@@ -1,5 +1,5 @@
 from django.contrib.auth.models import Group
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, authenticate, login
 from django.http import Http404
 from rest_framework import serializers, viewsets
 from rest_framework import permissions
@@ -8,6 +8,18 @@ from rest_framework.response import Response
 from rest_framework import status
 from .serializers import UserSerializer, GroupSerializer, ItemSerializer, OrderItemSerializer, OrderSerializer, ShippingAddressSerializer
 from .models import Item, OrderItem, Order, ShippingAddress
+
+class LoginAPIView(APIView):
+    def post(self, request):
+        username = request.data.get('username', None)
+        password = request.data.get('password', None)
+
+        user = authenticate(username=username, password=password)
+        if user is not None:
+            login(request,user)
+            return Response({'Message': 'Logged in'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'Message': 'Invalid username and password combination'}, status=status.HTTP_401_UNAUTHORIZED)
 
 class UserViewSet(viewsets.ModelViewSet):
     """
