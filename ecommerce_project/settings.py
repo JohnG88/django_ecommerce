@@ -37,7 +37,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # apps
     'ecommerce',
+    # third party
     'rest_framework',
     'corsheaders',
 ]
@@ -129,42 +131,36 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.BasicAuthentication',
-        #'rest_framework.authentication.SessionAuthentication',
-    ),
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10
-}
+AUTH_USER_MODEL = 'ecommerce.CustomUser'
+
+#REST_FRAMEWORK = {
+#    # Use Django's standard `django.contrib.auth` permissions,
+#    # or allow read-only access for unauthenticated users.
+#    'DEFAULT_PERMISSION_CLASSES': [
+#        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'    
+#   ]
+#}
 
 
+CSRF_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_HTTPONLY = True
+SESSION_COOKIE_HTTPONLY = True
 
 CORS_ALLOWED_ORIGINS = [
-    "http://127.0.0.1:8000",
-    "http://127.0.0.1:3000",
     "http://localhost:3000",
-    "http://localhost:8000",
-   # "http://localhost:3000/Login",
+   # "http://127.0.0.1:3000",
 ]
+
+CORS_EXPOSE_HEADERS = ["Content-Type", "X-CSRFToken"]
+
+CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
-    "http://localhost:8000",
-    "http://127.0.0.1:3000",
-    "http://127.0.0.1:8000",
-    "http://localhost:3000/Login",
+   # "http://127.0.0.1:3000",
 ]
 
-#CSRF_COOKIE_DOMAIN = [
-#    '127.0.0.1',
-#]
 
-#SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'http')
-#CSRF_COOKIE_SECURE = False
-#CORS_ALLOW_ALL_ORIGINS = True
 
-SESSION_COOKIE_SAMESITE = None
-CSRF_COOKIE_SAMESITE = None
 
-AUTH_USER_MODEL = 'ecommerce.CustomUser'

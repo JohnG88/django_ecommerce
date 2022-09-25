@@ -1,25 +1,37 @@
 from django.contrib.auth.models import Group
-from django.contrib.auth import get_user_model, authenticate, login
-from django.http import Http404
+from django.contrib.auth import get_user_model, authenticate, login, logout
+from django.http import Http404, JsonResponse
+from django.middleware.csrf import get_token
 from rest_framework import serializers, viewsets
 from rest_framework import permissions
+from rest_framework import response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .serializers import UserSerializer, GroupSerializer, ItemSerializer, OrderItemSerializer, OrderSerializer, ShippingAddressSerializer
 from .models import Item, OrderItem, Order, ShippingAddress
 
+
+def get_csrf(request):
+    response = JsonResponse({'Info': 'Success - Set CSRF cookie'})
+    response['X-CSRFToken'] = get_token(request)
+    print(f"Response {response}")
+    return response
+
 class LoginAPIView(APIView):
     def post(self, request):
         username = request.data.get('username', None)
         password = request.data.get('password', None)
+        if username is None or password is None:
+            return JsonResponse({'detail': 'Please provide username and password.'})
 
         user = authenticate(username=username, password=password)
-        if user is not None:
-            login(request,user)
-            return Response({'Message': 'Logged in'}, status=status.HTTP_200_OK)
-        else:
-            return Response({'Message': 'Invalid username and password combination'}, status=status.HTTP_401_UNAUTHORIZED)
+        if user is None:
+            return JsonResponse({'detail': 'Invalid credentials.'}, status=400)
+        login(request, user)
+        return JsonResponse({'detail': 'Successfully logged in.', 'user': request.user.username})
 
 class UserViewSet(viewsets.ModelViewSet):
     """
@@ -49,19 +61,45 @@ class OrderViewSet(viewsets.ModelViewSet):
     serializer_class = OrderSerializer
 
 class OrderItemViewSet(viewsets.ModelViewSet):
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [IsAuthenticated]
     queryset = OrderItem.objects.all()
     serializer_class = OrderItemSerializer
-    
-   # def get_queryset(self):
-        #user = self.request.user
-        #return OrderItem.objects.filter(customer=user.id)
 
+    def get_queryset(self):
+        queryset = self.queryset
+        user_order_items = queryset.filter(customer_id=self.request.user.id)
+        return user_order_items
+
+    def perform_create(self, serializer):
+        #order_item_id = request.user.data.get('item', None)
+        #item = Item.objects.get(id=order_item_id)
+        serializer.save(customer_id=self.request.user.id)
+    
+    '''
+    def post(request):
+        user = request.user.id
+        order_item_id = request.user.data.get('item', None)
+        item = Item.objects.get(id=order_item_id)
+        order_item = OrderItem(customer=user, item=item)
+        order_item.save()
+    '''
+    '''
+    def post(self, request):
+        print(self.request.user)
+        customer_id = request.data.get('customer', None)
+        order_item_id = request.data.get('item', None)
+        item = Item.objects.get(id=order_item_id)
+        user = get_user_model().objects.get(id=customer_id)
+        order_item = OrderItem(customer=user.url, item=item)
+        order_item.save()
+    '''
 
 class ShippingAddressViewSet(viewsets.ModelViewSet):
     queryset = ShippingAddress.objects.all()
     serializer_class = ShippingAddressSerializer
 
-
+'''
 class DetailItem(APIView):
     """
         Retrieve, update or delete an item instance.
@@ -90,4 +128,20 @@ class DetailItem(APIView):
         item.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-        
+''' 
+
+class WhoAmIView(APIView):
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [IsAuthenticated]
+    
+    @staticmethod
+    def get(request, format=None):
+        print(request.user.username)
+        return JsonResponse({"username": request.user.username})
+
+
+def logout_view(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'detail': 'You\'re not logged in.'}, status=400)
+    logout(request)
+    return JsonResponse({'detail': 'Successfully logged out.'})

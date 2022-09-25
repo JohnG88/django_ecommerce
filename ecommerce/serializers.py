@@ -27,12 +27,13 @@ class OrderSerializer(serializers.HyperlinkedModelSerializer):
         fields = ['id', 'customer', 'items', 'ordered_date', 'shipping_address', 'billing_address', 'being_delivered', 'received', 'refund_requested', 'refund_granted']
 
 class OrderItemSerializer(serializers.HyperlinkedModelSerializer):
-    customer = UserSerializer()
-    item = ItemSerializer()
+    customer_detail = UserSerializer(source='customer', read_only=True)
+    item_detail = ItemSerializer(source='item', read_only=True)
     get_total_item_price = serializers.CharField(required=False)
     class Meta:
         model = OrderItem
-        fields = ['id', 'customer', 'ordered', 'item', 'quantity', 'get_total_item_price']
+        fields = ['id', 'customer', 'customer_detail', 'ordered', 'item', 'item_detail', 'quantity', 'get_total_item_price']
+        read_only_fields = ('customer',)
 
 class ShippingAddressSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
