@@ -20,6 +20,7 @@ class ItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
         fields = ['id', 'url', 'name', 'image', 'price', 'description', 'stock', 'sold', 'created']
+        read_only_fields = ('image', 'name',)
 
 class OrderSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:

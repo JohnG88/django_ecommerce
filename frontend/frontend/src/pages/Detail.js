@@ -7,6 +7,8 @@ const Detail = () => {
     const itemId = params.detailId;
     const [csrftoken, setCsrftoken] = useState("");
     const [item, setItem] = useState([]);
+    const [number, setNumber] = useState(1);
+    console.log("Number", number);
 
     useEffect(() => {
         getItem();
@@ -37,7 +39,7 @@ const Detail = () => {
             },
             credentials: "include",
             body: JSON.stringify({
-                //customer: "http://127.0.0.1:8000/users/1/",
+                quantity: number,
                 item: item.url,
             }),
         };
@@ -47,6 +49,7 @@ const Detail = () => {
         );
         const data = await response.json();
         console.log("Item Data", data);
+        updateItem();
     };
 
     const getItem = async () => {
@@ -55,6 +58,27 @@ const Detail = () => {
         console.log("Data", data);
         setItem(data);
     };
+
+    const updateItem = async () => {
+        const requestOptions = {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": csrftoken,
+            },
+            credentials: "include",
+            body: JSON.stringify({
+                stock: item.stock - number,
+            }),
+        };
+        const response = await fetch(
+            `http://localhost:8000/items/${itemId}/`,
+            requestOptions
+        );
+        const data = await response.json();
+        console.log("updated item", data);
+    };
+
     return (
         <div className="items">
             <div className="items-header">
@@ -63,9 +87,17 @@ const Detail = () => {
             <div className="notes-list">
                 <div>
                     <ItemList key={item.id} item={item} />
-                    <Link to={`/order-item/${item.id}`}>
-                        <button onClick={handleSubmit}>Purchase Item</button>
-                    </Link>
+                    <form onSubmit={handleSubmit}>
+                        <input
+                            type="number"
+                            id="number"
+                            min="1"
+                            onChange={(e) => setNumber(e.target.value)}
+                            value={number}
+                            max={item.stock}
+                        />
+                        <button>Purchase Item</button>
+                    </form>
                 </div>
             </div>
         </div>

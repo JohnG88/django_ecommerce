@@ -3,11 +3,27 @@ import SavedItem from "../components/SavedItem";
 
 const ItemCart = () => {
     const [items, setItems] = useState([]);
+    const [csrftoken, setCsrftoken] = useState("");
     //const [orderedItems, setOrderedItems] = useState([])
 
     useEffect(() => {
         getCartItems();
+        getCSRFToken();
     }, []);
+
+    const getCSRFToken = () => {
+        fetch("http://localhost:8000/csrf", {
+            credentials: "include",
+        })
+            .then((res) => {
+                let csrfToken = res.headers.get("X-CSRFToken");
+                setCsrftoken(csrfToken);
+                console.log("csrf", csrfToken);
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+    };
 
     const getCartItems = async () => {
         //console.log("csrf", csrftoken);
@@ -33,6 +49,30 @@ const ItemCart = () => {
         //setOrderedItems({items: data.result})
     };
 
+    const handleDelete = async (e, id) => {
+        e.preventDefault();
+        const requestOptions = {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": csrftoken,
+            },
+            credentials: "include",
+        };
+        const response = await fetch(
+            `http://localhost:8000/order-item/${id}`,
+            requestOptions
+        );
+        removeItem(id);
+        // const data = await response.json();
+        //console.log("delete data", data);
+    };
+
+    const removeItem = async (id) => {
+        const newList = items.filter((item) => item.id !== id);
+        setItems(newList);
+    };
+
     return (
         <div>
             {items.map((item) => (
@@ -43,6 +83,15 @@ const ItemCart = () => {
                             item={item}
                             r_items={item.item_detail}
                         />
+                        <div>
+                            <form>
+                                <button
+                                    onClick={(e) => handleDelete(e, item.id)}
+                                >
+                                    Delete
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             ))}
