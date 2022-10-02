@@ -4,7 +4,8 @@ import SavedItem from "../components/SavedItem";
 const ItemCart = () => {
     const [items, setItems] = useState([]);
     const [csrftoken, setCsrftoken] = useState("");
-    //const [orderedItems, setOrderedItems] = useState([])
+    const [itemDetailList, setItemDetailList] = useState("");
+    // const [singleItem, setSingleItem] = useState();
 
     useEffect(() => {
         getCartItems();
@@ -41,15 +42,16 @@ const ItemCart = () => {
         );
         const data = await response.json();
         console.log("Data", data);
-        //const itemDetail = data.results.map(item => item.item);
-        // const dataResults = data.results;
-        // console.log("Items", itemDetail);
+        const itemDetail = data.map((item) => item.item_detail);
+        const itemResults = data.item_detail;
+        console.log("Items", itemDetail);
         setItems(data);
-        // console.log("Item items", items.itemDetail);
+        setItemDetailList(itemDetail);
         //setOrderedItems({items: data.result})
     };
+    console.log("Item items", itemDetailList);
 
-    const handleDelete = async (e, id) => {
+    const handleDelete = async (e, id, itemId) => {
         e.preventDefault();
         const requestOptions = {
             method: "DELETE",
@@ -64,6 +66,7 @@ const ItemCart = () => {
             requestOptions
         );
         removeItem(id);
+        updateStockOnDelete(itemId, id);
         // const data = await response.json();
         //console.log("delete data", data);
     };
@@ -73,6 +76,34 @@ const ItemCart = () => {
         setItems(newList);
     };
 
+    const updateStockOnDelete = async (id, orderId) => {
+        const singleItem = itemDetailList.find((x) => x.id === id);
+        const orderItemId = items.find((item) => item.id === orderId);
+        // setItemDetailList(singleItem);
+        console.log("Single item", singleItem);
+        console.log("Quantity", orderItemId);
+        const requestOptions = {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": csrftoken,
+            },
+            credentials: "include",
+            body: JSON.stringify({
+                stock: singleItem.stock + orderItemId.quantity,
+            }),
+        };
+        const response = await fetch(
+            `http://localhost:8000/items/${id}/`,
+            requestOptions
+        );
+        const data = await response.json();
+        console.log("Update json", data);
+        getCartItems();
+        // setItemDetailList(data);
+    };
+    //console.log("Item detail", items.item_detail);
+    //june 7, 23, jul 6, 21?, aug 4, 19, 30, sep 16
     return (
         <div>
             {items.map((item) => (
@@ -86,10 +117,18 @@ const ItemCart = () => {
                         <div>
                             <form>
                                 <button
-                                    onClick={(e) => handleDelete(e, item.id)}
+                                    onClick={(e) =>
+                                        handleDelete(
+                                            e,
+                                            item.id,
+                                            item.item_detail.id
+                                        )
+                                    }
                                 >
                                     Delete
                                 </button>
+                                <p>Order id: {item.id}</p>
+                                <p>item number: {item.item_detail.id}</p>
                             </form>
                         </div>
                     </div>

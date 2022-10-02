@@ -77,6 +77,7 @@ const Detail = () => {
         );
         const data = await response.json();
         console.log("updated item", data);
+        setItem(data);
     };
 
     return (
