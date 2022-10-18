@@ -1,9 +1,10 @@
 import React, { useContext, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { UserContext } from "./UserLoggedInContext";
 
 export function Navbar() {
     const [userData, setUserData] = useContext(UserContext);
+    const navigate = useNavigate();
 
     // useEffect(() => {
     //   logout();
@@ -17,6 +18,7 @@ export function Navbar() {
             .then((data) => {
                 console.log(data);
                 setUserData("");
+                navigate("/home");
             })
             .catch((err) => {
                 console.log(err);
