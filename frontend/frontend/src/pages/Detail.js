@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useContext } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import ItemList from "../components/ItemList";
 
 const Detail = () => {
+    const navigate = useNavigate();
     const params = useParams();
     const itemId = params.detailId;
     const [csrftoken, setCsrftoken] = useState("");
@@ -23,6 +24,7 @@ const Detail = () => {
                 let csrfToken = res.headers.get("X-CSRFToken");
                 setCsrftoken(csrfToken);
                 console.log("csrf", csrfToken);
+                console.log("res", res.headers);
             })
             .catch((error) => {
                 console.log(error);
@@ -50,6 +52,7 @@ const Detail = () => {
         const data = await response.json();
         console.log("Item Data", data);
         updateItem();
+        navigate("/order-item/");
     };
 
     const getItem = async () => {
