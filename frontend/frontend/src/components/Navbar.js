@@ -31,7 +31,9 @@ export function Navbar() {
                 <Link to="/">Home</Link>
             </li>
             {userData.user ? (
-                <li onClick={logout}>Logout</li>
+                <a href="#">
+                    <li onClick={logout}>Logout</li>
+                </a>
             ) : (
                 <li>
                     <Link to="/login">Login</Link>

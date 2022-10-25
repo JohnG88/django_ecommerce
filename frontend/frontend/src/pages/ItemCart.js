@@ -5,7 +5,7 @@ const ItemCart = () => {
     const [items, setItems] = useState([]);
     const [csrftoken, setCsrftoken] = useState("");
     const [itemDetailList, setItemDetailList] = useState("");
-    // const [singleItem, setSingleItem] = useState();
+    const [total, setTotal] = useState(0);
 
     useEffect(() => {
         getCartItems();
@@ -43,12 +43,28 @@ const ItemCart = () => {
         const data = await response.json();
         console.log("Data", data);
         const itemDetail = data.map((item) => item.item_detail);
+        const itemTotal = data.map((item) => item.get_total_item_price);
+        const stringToNum = itemTotal.map((str) => {
+            return Number(str);
+        });
+        console.log("Convert", stringToNum);
+
+        // Add , 0 to reduce to not get TypeError: Reduce of empty array with no initial value.
+        const totalPrice = stringToNum.reduce((total, item) => total + item, 0);
+
+        //const totalPrice2 = itemTotal.map((a) =>
+        //    JSON.parse(a).reduce((acc, curr) => acc + curr)
+        //);
+        //console.log("Item total reducer 2", totalPrice2);
         const itemResults = data.item_detail;
         console.log("Items", itemDetail);
+        console.log("Items total", itemTotal);
+        console.log("Items total reducer", totalPrice);
         setItems(data);
         setItemDetailList(itemDetail);
-        //setOrderedItems({items: data.result})
+        setTotal(totalPrice.toFixed(2));
     };
+
     console.log("Item items", itemDetailList);
 
     const handleDelete = async (e, id, itemId) => {
@@ -134,6 +150,7 @@ const ItemCart = () => {
                     </div>
                 </div>
             ))}
+            <h3>Total: {total}</h3>
         </div>
     );
 };

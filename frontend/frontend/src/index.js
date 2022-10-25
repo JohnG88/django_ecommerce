@@ -10,6 +10,7 @@ import AddOrder from "./pages/AddOrder";
 import ItemCart from "./pages/ItemCart";
 import Login from "./pages/LoginPage";
 import DashBoard, { Dashboard } from "./pages/Dashboard";
+import OrderItems from "./pages/OrderedItems";
 import { Navbar } from "./components/Navbar";
 import { UserProvider } from "./components/UserLoggedInContext";
 const root = ReactDOM.createRoot(document.getElementById("root"));
@@ -25,6 +26,7 @@ root.render(
                         <Route path="home" element={<HomePage />} />
                         <Route path="/detail/:detailId" element={<Detail />} />
                         <Route path="/order-item/" element={<ItemCart />} />
+                        <Route path="ordered-items" element={<OrderItems />} />
                         <Route
                             path="/order-item/:savedId"
                             element={<AddOrder />}

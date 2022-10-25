@@ -57,8 +57,15 @@ class ItemViewSet(viewsets.ModelViewSet):
     #permission_classes = [permissions.IsAuthenticated]
 
 class OrderViewSet(viewsets.ModelViewSet):
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [IsAuthenticated]
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
+
+    def get_queryset(self):
+        queryset = self.queryset
+        user_ordered_items = queryset.filter(customer_id=self.request.user.id)
+        return user_ordered_items
 
 class OrderItemViewSet(viewsets.ModelViewSet):
     authentication_classes = [SessionAuthentication]
@@ -72,9 +79,22 @@ class OrderItemViewSet(viewsets.ModelViewSet):
         return user_order_items
 
     def perform_create(self, serializer):
+        queryset = self.queryset
         #order_item_id = request.user.data.get('item', None)
         #item = Item.objects.get(id=order_item_id)
+
+        # Forst save serializer, then can use serializer.data.get('id', None)
         serializer.save(customer_id=self.request.user.id)
+        item_order_id = serializer.data.get('id', None)
+        print(f"Item order id {item_order_id}")
+        print(f"Serializer data {serializer.data}")
+        item_order_obj = queryset.get(id=item_order_id)
+        print(f"Item order obj {item_order_obj}")
+        order = Order.objects.get(customer_id=self.request.user.id)
+        print(f"Order {order.id}")
+        # If you want to set a list to m2m field write:
+        # order.items.set(item_order_obj)
+        order.items.add(item_order_obj)
     
     '''
     def post(request):
