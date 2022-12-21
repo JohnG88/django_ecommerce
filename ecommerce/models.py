@@ -57,7 +57,7 @@ class Order(models.Model):
     refund_granted = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.customer.username
+        return f"{self.customer.username}"
    
     def get_total(self):
         total = 0
@@ -67,15 +67,18 @@ class Order(models.Model):
 
 class ShippingAddress(models.Model):
     customer = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True)
-    item = models.ForeignKey(Item, on_delete=models.SET_NULL, null=True)
+    #item = models.ForeignKey(Item, on_delete=models.SET_NULL, null=True)
     address = models.CharField(max_length=500, null=False)
     apt = models.CharField(max_length=100, null=False, blank=True)
     city = models.CharField(max_length=300, null=False)
     state = models.CharField(max_length=200, null=False)
     zipcode = models.CharField(max_length=200, null=False)
+    address_type = models.CharField(max_length=1, choices=ADDRESS_CHOICES)
+    default = models.BooleanField(default=False)
 
     class Meta:
+        ordering = ('-default',)
         verbose_name_plural = 'ShippingAddresses'
 
     def __str__(self):
-        return f'{self.customer.username} | {self.item.name} | {self.state}'
+        return f'{self.customer.username} | {self.state} | {self.address_type}'

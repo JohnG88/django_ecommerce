@@ -9,7 +9,7 @@ from decimal import Decimal
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = get_user_model()
-        fields = ['url', 'username', 'email', 'groups']
+        fields = ['url', 'username', 'first_name', 'last_name', 'email', 'groups']
 
 
 class GroupSerializer(serializers.HyperlinkedModelSerializer):
@@ -33,16 +33,21 @@ class OrderItemSerializer(serializers.HyperlinkedModelSerializer):
         fields = ['id', 'customer', 'customer_detail', 'ordered', 'item', 'item_detail', 'quantity', 'get_total_item_price']
         read_only_fields = ('customer',)
 
+class ShippingAddressSerializer(serializers.HyperlinkedModelSerializer):
+    customer_detail = UserSerializer(source="customer", read_only=True)
+    class Meta:
+        model = ShippingAddress
+        fields = ['id', 'customer', 'customer_detail', 'address', 'apt', 'city', 'state', 'zipcode', 'address_type', 'default']
+
 class OrderSerializer(serializers.HyperlinkedModelSerializer):
     customer_detail = UserSerializer(source='customer', read_only=True)
     # When using ManyToManyField, set many=True
     order_items= OrderItemSerializer(source='items', many=True, read_only=True)
+    get_total = serializers.CharField(required=False)
+    get_address = ShippingAddressSerializer(source="shipping_address", read_only=True)
     class Meta:
         model = Order
-        fields = ['id', 'customer', 'customer_detail', 'items', 'order_items', 'order_items', 'ordered_date', 'shipping_address', 'billing_address', 'being_delivered', 'received', 'refund_requested', 'refund_granted']
+        fields = ['id', 'customer', 'customer_detail', 'items', 'order_items', 'get_total', 'ordered_date', 'ordered', 'shipping_address', 'get_address', 'billing_address', 'being_delivered', 'received', 'refund_requested', 'refund_granted']
         read_only_fields = ('customer', 'items',)
 
-class ShippingAddressSerializer(serializers.HyperlinkedModelSerializer):
-    class Meta:
-        model = ShippingAddress
-        fields = ['id', 'customer', 'item', 'address', 'apt', 'city', 'state', 'zipcode']
+

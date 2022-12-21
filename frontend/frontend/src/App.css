@@ -58,3 +58,10 @@
     background-color: #ddd;
     color: black;
 }
+
+.ship-info-div {
+    border: 1px solid white;
+    border-radius: 12px;
+    margin: 2rem;
+    padding: 1em;
+}

@@ -11,8 +11,12 @@ import ItemCart from "./pages/ItemCart";
 import Login from "./pages/LoginPage";
 import DashBoard, { Dashboard } from "./pages/Dashboard";
 import OrderItems from "./pages/OrderedItems";
+import ShippingAddress from "./pages/ShippingAddress";
+import BillingAddress from "./pages/BillingAddress";
+
 import { Navbar } from "./components/Navbar";
 import { UserProvider } from "./components/UserLoggedInContext";
+
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
     <React.StrictMode>
@@ -26,7 +30,15 @@ root.render(
                         <Route path="home" element={<HomePage />} />
                         <Route path="/detail/:detailId" element={<Detail />} />
                         <Route path="/order-item/" element={<ItemCart />} />
-                        <Route path="ordered-items" element={<OrderItems />} />
+                        <Route
+                            path="/ordered-items/"
+                            element={<OrderItems />}
+                        />
+                        <Route
+                            path="/shipping/"
+                            element={<ShippingAddress />}
+                        />
+                        <Route path="/billing/" element={<BillingAddress />} />
                         <Route
                             path="/order-item/:savedId"
                             element={<AddOrder />}

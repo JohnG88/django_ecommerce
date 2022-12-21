@@ -52,7 +52,7 @@ const Detail = () => {
         const data = await response.json();
         console.log("Item Data", data);
         updateItem();
-        navigate("/order-item/");
+        navigate("/ordered-items/");
     };
 
     const getItem = async () => {

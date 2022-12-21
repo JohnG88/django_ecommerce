@@ -1,13 +1,62 @@
-import React, { useEffect, useLayoutEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import SavedItem from "../components/SavedItem";
 
 const OrderItems = () => {
+    const [csrftoken, setCsrftoken] = useState("");
+    const [order, setOrder] = useState([]);
+    const [customerInfo, setCustomerInfo] = useState([]);
     const [items, setItems] = useState([]);
+    const [itemDetailList, setItemDetailList] = useState([]);
+    const [total, setTotal] = useState("");
+    const [shippingInfo, setShippingInfo] = useState([]);
+    const [billingInfo, setBillingInfo] = useState([]);
 
     useEffect(() => {
-        getItems();
+        getOrderedItems();
+        getShipping();
+        getCSRFToken();
     }, []);
 
-    const getItems = async () => {
+    const getCSRFToken = () => {
+        fetch("http://localhost:8000/csrf", {
+            credentials: "include",
+        })
+            .then((res) => {
+                let csrfToken = res.headers.get("X-CSRFToken");
+                console.log("csrf", csrfToken);
+                setCsrftoken(csrfToken);
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+    };
+
+    const getShipping = async () => {
+        const requestOptions = {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            credentials: "include",
+        };
+        const response = await fetch(
+            "http://localhost:8000/shipping/",
+            requestOptions
+        );
+        const data = await response.json();
+        const shipping_address = data.filter(
+            (item) => item.address_type == "S" && item.default == true
+        );
+        const billing_address = data.filter(
+            (item) => item.address_type == "B" && item.default == true
+        );
+        setShippingInfo(shipping_address);
+        setBillingInfo(billing_address);
+        console.log("Shipping data", data);
+    };
+
+    const getOrderedItems = async () => {
         const requestOptions = {
             method: "GET",
             headers: {
@@ -21,12 +70,174 @@ const OrderItems = () => {
         );
         const data = await response.json();
         console.log("Data", data);
-        setItems(data);
+        setOrder(data);
+        const allOrderedItems = data.map((item) => setItems(item.order_items));
+        //const allOrderedItems = data.map((item) => item.order_items);
+        const singleOrderItems = items.map((item) => item.item_detail);
+        const allTotal = data.map((item) => setTotal(item.get_total));
+        const info = data.map((customer) => customer.get_address);
+        setCustomerInfo(info);
+        setItemDetailList(singleOrderItems);
+    };
+    console.log("Order", order);
+
+    console.log("item orders", items);
+    console.log("Single order items", itemDetailList);
+
+    const handleDelete = async (e, id, itemId) => {
+        e.preventDefault();
+        const requestOptions = {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": csrftoken,
+            },
+            credentials: "include",
+        };
+        const response = await fetch(
+            `http://localhost:8000/order-item/${id}/`,
+            requestOptions
+        );
+        // removeItem(id);
+        updateStockOnDelete(itemId, id);
+        getOrderedItems();
+    };
+
+    //const removeItem = async (id) => {
+    //    const newList = items.filter((item) => item.id !== id);
+    //    setItems(newList);
+    //};
+
+    const updateStockOnDelete = async (id, orderId) => {
+        const orderItemId = items.find((item) => item.id === orderId);
+        const stockValue = orderItemId.item_detail.stock;
+
+        console.log("Single Item", stockValue);
+        console.log("quantity", orderItemId);
+
+        const requestOptions = {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": csrftoken,
+            },
+            credentials: "include",
+            body: JSON.stringify({
+                stock: stockValue + orderItemId.quantity,
+            }),
+        };
+        const response = await fetch(
+            `http://localhost:8000/items/${id}/`,
+            requestOptions
+        );
+        const data = await response.json();
+        console.log("update data", data);
+        getOrderedItems();
+    };
+
+    console.log("Customer INfo", customerInfo);
+    console.log("order", order);
+
+    const updateOrder = async (e) => {
+        e.preventDefault();
+        const orderId = order.map((num) => num.id);
+        const date = new Date();
+
+        console.log("order id", orderId);
+        const requestOptions = {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": csrftoken,
+            },
+            credentials: "include",
+            body: JSON.stringify({ ordered: true, ordered_date: date }),
+        };
+        const response = await fetch(
+            `http://localhost:8000/order/${orderId}/`,
+            requestOptions
+        );
+        const data = await response.json();
+        console.log("Updated data", data);
     };
 
     return (
         <div>
-            <h4>Ordered Items</h4>
+            {order.map((info) => (
+                <p>Order id: {info.id}</p>
+            ))}
+            {items.map((item) => (
+                <div key={item.id}>
+                    <div>
+                        <SavedItem
+                            user={item.customer}
+                            item={item}
+                            r_items={item.item_detail}
+                        />
+                        <div>
+                            <form>
+                                <button
+                                    onClick={(e) =>
+                                        handleDelete(
+                                            e,
+                                            item.id,
+                                            item.item_detail.id
+                                        )
+                                    }
+                                >
+                                    Delete
+                                </button>
+                                <p>Order item id: {item.id}</p>
+                                <p>item number: {item.item_detail.id}</p>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            ))}
+
+            <div>
+                <h4>Total: ${total}</h4>
+            </div>
+            {/*
+            {customerInfo.map((u_address) => (
+                <div key={u_address.id}>
+                    <p>{u_address.address}</p>
+                </div>
+            ))}
+            */}
+            <form onSubmit={updateOrder}>
+                <button>Place Order</button>
+            </form>
+            <Link to={"/shipping/"}>
+                <div>
+                    {shippingInfo.map((info) => (
+                        <div key={info.id}>
+                            <div className="ship-info-div">
+                                <p>Shipping address.</p>
+                                <p>
+                                    {info.address}, {info.apt}, {info.city},{" "}
+                                    {info.state}, {info.zipcode}
+                                </p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </Link>
+            <Link to={"/billing/"}>
+                <div>
+                    {billingInfo.map((info) => (
+                        <div key={info.id}>
+                            <div className="ship-info-div">
+                                <p>Billing address.</p>
+                                <p>
+                                    {info.address}, {info.apt}, {info.city},{" "}
+                                    {info.state}, {info.zipcode}
+                                </p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </Link>
         </div>
     );
 };
