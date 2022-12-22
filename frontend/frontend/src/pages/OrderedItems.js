@@ -11,6 +11,7 @@ const OrderItems = () => {
     const [total, setTotal] = useState("");
     const [shippingInfo, setShippingInfo] = useState([]);
     const [billingInfo, setBillingInfo] = useState([]);
+    const [itemIdNum, setItemidNum] = useState([]);
 
     useEffect(() => {
         getOrderedItems();
@@ -76,6 +77,7 @@ const OrderItems = () => {
         const singleOrderItems = items.map((item) => item.item_detail);
         const allTotal = data.map((item) => setTotal(item.get_total));
         const info = data.map((customer) => customer.get_address);
+        //const idNum = data.map((num) => )
         setCustomerInfo(info);
         setItemDetailList(singleOrderItems);
     };
@@ -134,12 +136,90 @@ const OrderItems = () => {
         console.log("update data", data);
         getOrderedItems();
     };
+    //u/Fine_Bench9084
+
+    // Function update with array of numbers
+    //const updateAPIs = async (ids) => {
+
+    //    ids.forEach(id => {
+    //        const itemId = items.find((item) => item.id === id);
+    //        const stockNum = itemId.item_detail.sold;
+    //        const itemQuantity = itemId.quantity;
+    //        const response = await fetch(`http://localhost:8000/items/${id}`,
+    //            method: "PUT",
+    //            headers: {
+    //                "Content-Type": "application/json",
+    //                "X-CSRFToken": csrftoken,
+    //            },
+    //            credentials: "include",
+    //            body: JSON.stringify({
+    //                sold: stockNum + itemQuantity,
+    //            }),
+    //        const data = await response.json();
+    //        console.log("Multiple item data", data)
+    //    }))
+    //}
+
+    const updateItemAPIs = (ids) => {
+        ids.forEach((id) => {
+            console.log("IDS", ids);
+            const itemId = items.find((item) => item.id === id);
+            console.log("Item id", itemId);
+            const originalItemId = itemId.item_detail.id;
+            const stockNum = itemId.item_detail.sold;
+            console.log("Stock num", stockNum);
+            const itemQuantity = itemId.quantity;
+            console.log("Item quantity", itemQuantity);
+            const response = fetch(
+                `http://localhost:8000/items/${originalItemId}/`,
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": csrftoken,
+                    },
+                    credentials: "include",
+                    body: JSON.stringify({
+                        sold: stockNum + itemQuantity,
+                    }),
+                }
+            );
+            //const data = response.json();
+            //console.log("Multi item update with order confirmation.", data);
+        });
+    };
+
+    //const updateStockOnOrder = async (id, orderId) => {
+    //    const orderItemId = items.find((item) => item.id === orderId);
+    //    //console.log("Order item id", orderItemId);
+    //    const soldValue = orderItemId.item_detail.sold;
+    //    console.log("sold value", soldValue);
+    //    const requestOptions = {
+    //        method: "PUT",
+    //        headers: {
+    //            "Content-Type": "application/json",
+    //            "X-CSRFToken": csrftoken,
+    //        },
+    //        credentials: "include",
+    //        body: JSON.stringify({
+    //            sold: soldValue + orderItemId,
+    //        }),
+    //    };
+    //    const response = await fetch(
+    //        `http://localhost:8000/items/${id}`,
+    //        requestOptions
+    //    );
+    //    const data = await response.json();
+    //    console.log("Updated sold number", data);
+    //};
 
     console.log("Customer INfo", customerInfo);
     console.log("order", order);
 
     const updateOrder = async (e) => {
         e.preventDefault();
+        const itemIds = items.map((item) => item.id);
+        console.log("Item id array", itemIds);
         const orderId = order.map((num) => num.id);
         const date = new Date();
 
@@ -159,6 +239,7 @@ const OrderItems = () => {
         );
         const data = await response.json();
         console.log("Updated data", data);
+        updateItemAPIs(itemIds);
     };
 
     return (
