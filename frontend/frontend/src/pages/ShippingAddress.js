@@ -13,6 +13,7 @@ const ShippingAddress = () => {
     const [zipcode, setZipcode] = useState("");
     const [shippingAddress, setShippingAddress] = useState([]);
     const [defaultShipping, setDefaultShipping] = useState(false);
+    const [checkboxCheck, setCheckboxCheck] = useState(false);
     const [value, setValue] = useState(0);
 
     useEffect(() => {
@@ -66,6 +67,17 @@ const ShippingAddress = () => {
     };
     console.log("default shipping", defaultShipping);
 
+    const checkDefaultCheckbox = (e) => {
+        if (e.target.checked) {
+            console.log("Checkbox is checked");
+            setCheckboxCheck(true);
+        } else {
+            console.log("Checkbox is not checked");
+            setCheckboxCheck(false);
+        }
+    };
+    console.log("Checkbox", checkboxCheck);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -79,6 +91,7 @@ const ShippingAddress = () => {
             body: JSON.stringify({
                 shipping: true,
                 user_default_shipping: defaultShipping,
+                checkbox: checkboxCheck,
                 address: address,
                 apt: apt,
                 city: city,
@@ -125,13 +138,6 @@ const ShippingAddress = () => {
     return (
         <div>
             <div>
-                <input
-                    type="checkbox"
-                    name="set_default_billing"
-                    id="set_default_billing"
-                    onChange={handleShippingChk}
-                    value={defaultShipping}
-                />
                 <div>
                     <form onSubmit={(e) => updateDefault(e)}>
                         {shippingAddress.map((info) => (
@@ -205,6 +211,16 @@ const ShippingAddress = () => {
                     </div>
                     <button>Save Shipping Address</button>
                 </form>
+                <label>
+                    <input
+                        type="checkbox"
+                        name="set_default_shipping"
+                        id="set_default_shipping"
+                        onChange={checkDefaultCheckbox}
+                        value={defaultShipping}
+                    />
+                    Set this address as default.
+                </label>
             </div>
             <Link to={"/ordered-items/"}>Go back to order</Link>
         </div>

@@ -10,6 +10,7 @@ const BillingAddress = () => {
     const [zipcode, setZipcode] = useState("");
     const [billingAddress, setBillingAddress] = useState([]);
     const [defaultBilling, setDefaultBilling] = useState(false);
+    const [checkboxCheck, setCheckboxCheck] = useState(false);
     const [value, setValue] = useState(0);
 
     useEffect(() => {
@@ -61,6 +62,17 @@ const BillingAddress = () => {
         setValue(e.target.value);
     };
 
+    const checkDefaultCheckbox = (e) => {
+        if (e.target.checked) {
+            console.log("Checkbox is checked");
+            setCheckboxCheck(true);
+        } else {
+            console.log("Checkbox is not checked");
+            setCheckboxCheck(false);
+        }
+    };
+    console.log("Checkbox", checkboxCheck);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -74,6 +86,7 @@ const BillingAddress = () => {
             body: JSON.stringify({
                 billing: true,
                 user_default_billing: defaultBilling,
+                billing_checkbox: checkboxCheck,
                 address: address,
                 apt: apt,
                 city: city,
@@ -182,6 +195,18 @@ const BillingAddress = () => {
                                 onChange={(e) => setZipcode(e.target.value)}
                             />
                         </div>
+                    </div>
+                    <div>
+                        <label>
+                            <input
+                                type="checkbox"
+                                name="set_default_billing"
+                                id="set_default_billing"
+                                onChange={checkDefaultCheckbox}
+                                value={defaultBilling}
+                            />
+                            Set this address as default.
+                        </label>
                     </div>
                     <button>Save Billing Address</button>
                 </form>

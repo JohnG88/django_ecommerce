@@ -197,6 +197,8 @@ class ShippingAddressViewSet(viewsets.ModelViewSet):
         user_default_shipping = request.data.get('user_default_shipping', None)
         print(f"default shipping {user_default_shipping}")
         print(f"request {request.data}")
+        checkbox_check = request.data.get('checkbox', None);
+
         
         address_qs = queryset.filter(customer_id=request.user.id, address_type='S', default=True)
         print(f"Address qs {address_qs}")
@@ -235,10 +237,17 @@ class ShippingAddressViewSet(viewsets.ModelViewSet):
                     #    for s_address in address_qs:
                     #        s_address.save()
 
+                    if checkbox_check:
+                        address_qs.update(default=False)
+                        for s_address in address_qs:
+                            s_address.save()
+                        shipping.default = True
+
                     shipping.save()
                     
                     billing_address = shipping
                     billing_address.pk = None
+                    billing_address.default = False
                     billing_address.save()
                     billing_address.address_type = 'B'
 
@@ -260,23 +269,14 @@ class ShippingAddressViewSet(viewsets.ModelViewSet):
                     return JsonResponse({"detail": "Created shipping address."})
 
         user_default_billing = request.data.get('user_default_billing', None)
-        same_billing_address = request.data.get('same_billing_address', None)
+        default_billing = request.data.get('billing_checkbox', None)
 
         if user_billing:
-            if same_billing_address:
-                billing_address = shipping_address
-                billing_address.pk = None
-                billing_address.save()
-                billing_address.address_type = 'B'
-                billing_address.save()
-                order.billing_address = billing_address
-                order.save()
-
-            elif user_default_billing:
+            if user_default_billing:
                 print("Using the default billing address")
-                address_qs = ShippingAddress.objects.filter(customer_id=request.user.id, address_type='B', default=True)
-                if address_qs.exists():
-                    billing_address = address_qs[0]
+                #billing_qs = ShippingAddress.objects.filter(customer_id=request.user.id, address_type='B', default=True)
+                if address_b_qs.exists():
+                    billing_address = address_b_qs[0]
                     order.billing_address = billing_address
                     order.save()
                 else:
@@ -292,6 +292,13 @@ class ShippingAddressViewSet(viewsets.ModelViewSet):
                 if is_valid_form([address, apt, city, state, zipcode]):
                     billing_address = ShippingAddress.objects.create(customer_id=request.user.id, address=address, apt=apt, city=city, state=state, zipcode=zipcode, address_type='B')
                     order.billing_address = billing_address
+
+                    if default_billing:
+                        address_b_qs.update(default=False)
+                        for b_address in address_b_qs:
+                            b_address.save()
+                        billing_address.default = True
+                        billing_address.save()
                     order.save()
 
 
