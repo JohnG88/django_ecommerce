@@ -199,6 +199,14 @@ class ShippingAddressViewSet(viewsets.ModelViewSet):
         print(f"request {request.data}")
         
         address_qs = queryset.filter(customer_id=request.user.id, address_type='S', default=True)
+        print(f"Address qs {address_qs}")
+        size_of_s_address = len(address_qs)
+        print(f"Size of shipping address {size_of_s_address}")
+        address_b_qs = queryset.filter(customer_id=request.user.id, address_type='B', default=True)
+        size_of_b_address = len(address_b_qs)
+        print(f"Address b qs {address_b_qs}")
+        print(f"Size of billinging address {size_of_b_address}")
+        
         if user_shipping:
             if user_default_shipping:
                 print("Using the default shipping address.")
@@ -218,7 +226,35 @@ class ShippingAddressViewSet(viewsets.ModelViewSet):
                 zipcode = request.data.get("zipcode", None)
                 if is_valid_form([address, apt, city, state, zipcode]):
                     shipping = ShippingAddress.objects.create(customer_id=request.user.id, address=address, apt=apt, city=city, state=state, zipcode=zipcode, address_type='S')
+                    
+
+                    if size_of_s_address == 0:
+                        shipping.default = True
+                    #else:
+                    #    address_qs.update(default=False)
+                    #    for s_address in address_qs:
+                    #        s_address.save()
+
+                    shipping.save()
+                    
+                    billing_address = shipping
+                    billing_address.pk = None
+                    billing_address.save()
+                    billing_address.address_type = 'B'
+
+                    
+                    if size_of_b_address == 0:
+                        billing_address.default = True
+                    #else:
+                    #    address_b_qs.update(default=False)
+                    #    for b_address in address_b_qs:
+                    #        b_address.save()
+
+                    billing_address.save()
+                    
                     order.shipping_address = shipping
+                    order.billing_address = billing_address 
+
                     order.save() 
 
                     return JsonResponse({"detail": "Created shipping address."})

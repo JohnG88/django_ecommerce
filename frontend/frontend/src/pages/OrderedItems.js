@@ -298,11 +298,15 @@ const OrderItems = () => {
                     </form>
 
                     <Link to={"/shipping/"}>
-                        <div>
+                        <div className="ship-info-div">
+                            {shippingInfo.length > 0 ? (
+                                <p>Shipping address</p>
+                            ) : (
+                                <p>Add a shipping address.</p>
+                            )}
                             {shippingInfo.map((info) => (
                                 <div key={info.id}>
-                                    <div className="ship-info-div">
-                                        <p>Shipping address.</p>
+                                    <div>
                                         <p>
                                             {info.address}, {info.apt},{" "}
                                             {info.city}, {info.state},{" "}

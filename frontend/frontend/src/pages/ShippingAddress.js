@@ -92,7 +92,7 @@ const ShippingAddress = () => {
         );
         const data = await response.json();
         console.log("Shippping", data);
-        //navigate("/ordered-items");
+        navigate("/ordered-items");
     };
 
     const updateDefault = async (e) => {
