@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import SavedItem from "../components/SavedItem";
+import { Link } from "react-router-dom";
 
 const ItemCart = () => {
     const [items, setItems] = useState([]);
@@ -122,35 +123,46 @@ const ItemCart = () => {
     //june 7, 23, jul 6, 21?, aug 4, 19, 30, sep 16
     return (
         <div>
-            {items.map((item) => (
-                <div key={item.id}>
-                    <div>
-                        <SavedItem
-                            user={item.customer}
-                            item={item}
-                            r_items={item.item_detail}
-                        />
-                        <div>
-                            <form>
-                                <button
-                                    onClick={(e) =>
-                                        handleDelete(
-                                            e,
-                                            item.id,
-                                            item.item_detail.id
-                                        )
-                                    }
-                                >
-                                    Delete
-                                </button>
-                                <p>Order id: {item.id}</p>
-                                <p>item number: {item.item_detail.id}</p>
-                            </form>
+            {items.length > 0 ? (
+                <>
+                    {items.map((item) => (
+                        <div key={item.id}>
+                            <div>
+                                <SavedItem
+                                    user={item.customer}
+                                    item={item}
+                                    r_items={item.item_detail}
+                                />
+                                <div>
+                                    <form>
+                                        <button
+                                            onClick={(e) =>
+                                                handleDelete(
+                                                    e,
+                                                    item.id,
+                                                    item.item_detail.id
+                                                )
+                                            }
+                                        >
+                                            Delete
+                                        </button>
+                                        <p>Order id: {item.id}</p>
+                                        <p>
+                                            item number: {item.item_detail.id}
+                                        </p>
+                                    </form>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-            ))}
-            <h3>Total: {total}</h3>
+                    ))}
+                    <h3>Total: {total}</h3>
+                </>
+            ) : (
+                <p>No items in Cart</p>
+            )}
+            <Link to="/ordered-items/">
+                <button>View Order</button>
+            </Link>
         </div>
     );
 };

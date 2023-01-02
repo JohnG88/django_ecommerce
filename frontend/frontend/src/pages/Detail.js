@@ -9,7 +9,7 @@ const Detail = () => {
     const [csrftoken, setCsrftoken] = useState("");
     const [item, setItem] = useState([]);
     const [number, setNumber] = useState(1);
-    console.log("Number", number);
+    const [orderCreated, setOrderCreated] = useState("");
 
     useEffect(() => {
         getItem();
@@ -50,9 +50,12 @@ const Detail = () => {
             requestOptions
         );
         const data = await response.json();
-        console.log("Item Data", data);
-        updateItem();
-        navigate("/ordered-items/");
+        console.log("order Item Data", data);
+        setOrderCreated(data);
+        if (!data.detail) {
+            updateItem();
+            navigate("/order-item/");
+        }
     };
 
     const getItem = async () => {
@@ -74,6 +77,7 @@ const Detail = () => {
                 stock: item.stock - number,
             }),
         };
+
         const response = await fetch(
             `http://localhost:8000/items/${itemId}/`,
             requestOptions

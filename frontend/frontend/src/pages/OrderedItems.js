@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import SavedItem from "../components/SavedItem";
 
 const OrderItems = () => {
+    const navigate = useNavigate();
     const [csrftoken, setCsrftoken] = useState("");
     const [order, setOrder] = useState([]);
     const [customerInfo, setCustomerInfo] = useState([]);
@@ -240,85 +241,98 @@ const OrderItems = () => {
         const data = await response.json();
         console.log("Updated data", data);
         updateItemAPIs(itemIds);
+        setItems("");
+        navigate("/order-placed/");
     };
 
     return (
         <div>
-            {order.map((info) => (
-                <p>Order id: {info.id}</p>
-            ))}
-            {items.map((item) => (
-                <div key={item.id}>
-                    <div>
-                        <SavedItem
-                            user={item.customer}
-                            item={item}
-                            r_items={item.item_detail}
-                        />
-                        <div>
-                            <form>
-                                <button
-                                    onClick={(e) =>
-                                        handleDelete(
-                                            e,
-                                            item.id,
-                                            item.item_detail.id
-                                        )
-                                    }
-                                >
-                                    Delete
-                                </button>
-                                <p>Order item id: {item.id}</p>
-                                <p>item number: {item.item_detail.id}</p>
-                            </form>
+            {items.length > 0 ? (
+                <>
+                    {order.map((info) => (
+                        <p key={info.id}>Order id: {info.id}</p>
+                    ))}
+                    {items.map((item) => (
+                        <div key={item.id}>
+                            <div>
+                                <SavedItem
+                                    user={item.customer}
+                                    item={item}
+                                    r_items={item.item_detail}
+                                />
+                                <div>
+                                    <form>
+                                        <button
+                                            onClick={(e) =>
+                                                handleDelete(
+                                                    e,
+                                                    item.id,
+                                                    item.item_detail.id
+                                                )
+                                            }
+                                        >
+                                            Delete
+                                        </button>
+                                        <p>Order item id: {item.id}</p>
+                                        <p>
+                                            item number: {item.item_detail.id}
+                                        </p>
+                                    </form>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-            ))}
+                    ))}
 
-            <div>
-                <h4>Total: ${total}</h4>
-            </div>
-            {/*
+                    <div>
+                        <h4>Total: ${total}</h4>
+                    </div>
+                    {/*
             {customerInfo.map((u_address) => (
                 <div key={u_address.id}>
                     <p>{u_address.address}</p>
                 </div>
             ))}
             */}
-            <form onSubmit={updateOrder}>
-                <button>Place Order</button>
-            </form>
-            <Link to={"/shipping/"}>
-                <div>
-                    {shippingInfo.map((info) => (
-                        <div key={info.id}>
-                            <div className="ship-info-div">
-                                <p>Shipping address.</p>
-                                <p>
-                                    {info.address}, {info.apt}, {info.city},{" "}
-                                    {info.state}, {info.zipcode}
-                                </p>
-                            </div>
+                    <form onSubmit={updateOrder}>
+                        <button>Place Order</button>
+                    </form>
+
+                    <Link to={"/shipping/"}>
+                        <div>
+                            {shippingInfo.map((info) => (
+                                <div key={info.id}>
+                                    <div className="ship-info-div">
+                                        <p>Shipping address.</p>
+                                        <p>
+                                            {info.address}, {info.apt},{" "}
+                                            {info.city}, {info.state},{" "}
+                                            {info.zipcode}
+                                        </p>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
-                    ))}
-                </div>
-            </Link>
-            <Link to={"/billing/"}>
-                <div>
-                    {billingInfo.map((info) => (
-                        <div key={info.id}>
-                            <div className="ship-info-div">
-                                <p>Billing address.</p>
-                                <p>
-                                    {info.address}, {info.apt}, {info.city},{" "}
-                                    {info.state}, {info.zipcode}
-                                </p>
-                            </div>
+                    </Link>
+                    <Link to={"/billing/"}>
+                        <div>
+                            {billingInfo.map((info) => (
+                                <div key={info.id}>
+                                    <div className="ship-info-div">
+                                        <p>Billing address.</p>
+                                        <p>
+                                            {info.address}, {info.apt},{" "}
+                                            {info.city}, {info.state},{" "}
+                                            {info.zipcode}
+                                        </p>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
-                    ))}
-                </div>
-            </Link>
+                    </Link>
+                </>
+            ) : (
+                <p>No items to order.</p>
+            )}
         </div>
     );
 };

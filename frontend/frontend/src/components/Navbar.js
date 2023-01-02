@@ -26,20 +26,27 @@ export function Navbar() {
     };
 
     return (
-        <div className="topnav">
-            <li>
-                <Link to="/">Home</Link>
-            </li>
-            {userData.user ? (
-                <a href="#">
-                    <li onClick={logout}>Logout</li>
-                </a>
-            ) : (
+        <>
+            <div className="topnav">
                 <li>
-                    <Link to="/login">Login</Link>
+                    <Link to="/">Home</Link>
                 </li>
-            )}
-            <li>{userData.user}</li>
-        </div>
+                {userData.user ? (
+                    <>
+                        <a href="#">
+                            <li onClick={logout}>Logout</li>
+                        </a>
+                        <li>{userData.user}</li>
+                    </>
+                ) : (
+                    <li>
+                        <Link to="/login">Login</Link>
+                    </li>
+                )}
+                <li>
+                    <Link to="/order-item/">Item Cart</Link>
+                </li>
+            </div>
+        </>
     );
 }

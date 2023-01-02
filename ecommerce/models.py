@@ -56,6 +56,9 @@ class Order(models.Model):
     refund_requested = models.BooleanField(default=False)    
     refund_granted = models.BooleanField(default=False)
 
+    class Meta:
+        ordering = ('-ordered_date',)
+
     def __str__(self):
         return f"{self.customer.username}"
    

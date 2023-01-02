@@ -8,6 +8,7 @@ from django.utils import timezone
 from rest_framework import serializers, viewsets
 from rest_framework import permissions
 from rest_framework import response
+from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.views import APIView
@@ -297,8 +298,23 @@ class ShippingAddressViewSet(viewsets.ModelViewSet):
 
 
 
+class OrderPlacedViewSet(viewsets.ModelViewSet):
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [IsAuthenticated]
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
+
+    def get_queryset(self):
+        queryset = self.queryset
+        latest_order = queryset.filter(customer_id=self.request.user.id)[:1]
+        return latest_order
+
+    #def get_object(self):
+    #    queryset = self.get_queryset()
+    #    return get_object_or_404(queryset)
+
 '''
-class DetailItem(APIView):
+glasseDetailItem(APIView):
     """
         Retrieve, update or delete an item instance.
     """

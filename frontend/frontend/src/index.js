@@ -13,6 +13,7 @@ import DashBoard, { Dashboard } from "./pages/Dashboard";
 import OrderItems from "./pages/OrderedItems";
 import ShippingAddress from "./pages/ShippingAddress";
 import BillingAddress from "./pages/BillingAddress";
+import OrderPlaced from "./pages/OrderPlaced";
 
 import { Navbar } from "./components/Navbar";
 import { UserProvider } from "./components/UserLoggedInContext";
@@ -42,6 +43,10 @@ root.render(
                         <Route
                             path="/order-item/:savedId"
                             element={<AddOrder />}
+                        />
+                        <Route
+                            path="/order-placed/"
+                            element={<OrderPlaced />}
                         />
                         <Route
                             path="*"
