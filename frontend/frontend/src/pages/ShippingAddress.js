@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import AuthContext from "../context/AuthContext";
 
 const ShippingAddress = () => {
     //const userRef = useRef();
     const navigate = useNavigate();
+    const { accessToken } = useContext(AuthContext);
     const [csrftoken, setCsrftoken] = useState("");
     const [address, setAddress] = useState("");
     const [apt, setApt] = useState("");
@@ -18,10 +20,11 @@ const ShippingAddress = () => {
 
     useEffect(() => {
         //userRef.current.focus();
-        getCSRFToken();
+        //getCSRFToken();
         getShipping();
     }, []);
 
+    /*
     const getCSRFToken = () => {
         fetch("http://localhost:8000/csrf", {
             credentials: "include",
@@ -36,6 +39,7 @@ const ShippingAddress = () => {
                 console.log(error);
             });
     };
+    */
 
     const getShipping = async () => {
         const requestOptions = {
@@ -43,7 +47,7 @@ const ShippingAddress = () => {
             headers: {
                 "Content-Type": "application/json",
             },
-            credentials: "include",
+            //credentials: "include",
         };
         const response = await fetch(
             "http://localhost:8000/shipping/",
@@ -85,9 +89,10 @@ const ShippingAddress = () => {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "X-CSRFToken": csrftoken,
+                Authorization: `Bearer ${accessToken}`,
+                //"X-CSRFToken": csrftoken,
             },
-            credentials: "include",
+            //credentials: "include",
             body: JSON.stringify({
                 shipping: true,
                 user_default_shipping: defaultShipping,
@@ -118,9 +123,10 @@ const ShippingAddress = () => {
             method: "PATCH",
             headers: {
                 "Content-Type": "application/json",
-                "X-CSRFToken": csrftoken,
+                Authorization: `Bearer ${accessToken}`,
+                //"X-CSRFToken": csrftoken,
             },
-            credentials: "include",
+            //credentials: "include",
             body: JSON.stringify({
                 user_default_shipping: true,
                 default: true,

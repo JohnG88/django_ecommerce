@@ -7,6 +7,8 @@ from django.utils import timezone
 
 from rest_framework import serializers, viewsets
 from rest_framework import permissions
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework import response
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
@@ -23,13 +25,26 @@ def is_valid_form(values):
         if field == '':
             valid = False
     return valid
-
+'''
 def get_csrf(request):
     response = JsonResponse({'Info': 'Success - Set CSRF cookie'})
     response['X-CSRFToken'] = get_token(request)
     print(f"Response {response}")
     return response
+'''
 
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+        token['username'] = user.username
+
+        return token
+
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = MyTokenObtainPairSerializer
+
+'''
 class LoginAPIView(APIView):
     def post(self, request):
         username = request.data.get('username', None)
@@ -42,6 +57,7 @@ class LoginAPIView(APIView):
             return JsonResponse({'detail': 'Invalid credentials.'}, status=400)
         login(request, user)
         return JsonResponse({'detail': 'Successfully logged in.', 'user': request.user.username})
+'''
 
 class UserViewSet(viewsets.ModelViewSet):
     """
@@ -50,7 +66,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
     queryset = get_user_model().objects.all().order_by('-date_joined')
     serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = (IsAuthenticated,)
 
 class GroupViewSet(viewsets.ModelViewSet):
 
@@ -59,16 +75,16 @@ class GroupViewSet(viewsets.ModelViewSet):
     """
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = (IsAuthenticated,)
 
 class ItemViewSet(viewsets.ModelViewSet):
     queryset = Item.objects.all()
     serializer_class = ItemSerializer
-    #permission_classes = [permissions.IsAuthenticated]
+    permission_classes = (IsAuthenticated,)
 
 class OrderViewSet(viewsets.ModelViewSet):
-    authentication_classes = [SessionAuthentication]
-    permission_classes = [IsAuthenticated]
+    #authentication_classes = [SessionAuthentication]
+    permission_classes = (IsAuthenticated,)
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
 
@@ -121,8 +137,8 @@ class OrderViewSet(viewsets.ModelViewSet):
     #    user_address = ShippingAddress.objects.get(customer_id=self.request.user.id)
 
 class OrderItemViewSet(viewsets.ModelViewSet):
-    authentication_classes = [SessionAuthentication]
-    permission_classes = [IsAuthenticated]
+    #authentication_classes = [SessionAuthentication]
+    permission_classes = (IsAuthenticated,)
     queryset = OrderItem.objects.all()
     serializer_class = OrderItemSerializer
 
@@ -182,6 +198,7 @@ class OrderItemViewSet(viewsets.ModelViewSet):
 class ShippingAddressViewSet(viewsets.ModelViewSet):
     queryset = ShippingAddress.objects.all()
     serializer_class = ShippingAddressSerializer
+    permission_classes = (IsAuthenticated,)
     
     def get_queryset(self):
         queryset = self.queryset
@@ -342,8 +359,7 @@ class ShippingAddressViewSet(viewsets.ModelViewSet):
 
 
 class OrderPlacedViewSet(viewsets.ModelViewSet):
-    authentication_classes = [SessionAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsAuthenticated,)
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
 
@@ -385,7 +401,7 @@ glasseDetailItem(APIView):
         item.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-''' 
+ 
 
 class WhoAmIView(APIView):
     authentication_classes = [SessionAuthentication]
@@ -402,3 +418,4 @@ def logout_view(request):
         return JsonResponse({'detail': 'You\'re not logged in.'}, status=400)
     logout(request)
     return JsonResponse({'detail': 'Successfully logged out.'})
+'''

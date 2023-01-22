@@ -2,20 +2,24 @@ import React, { useState, useEffect, useContext } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import ItemList from "../components/ItemList";
 
+import AuthContext from "../context/AuthContext";
+
 const Detail = () => {
     const navigate = useNavigate();
     const params = useParams();
     const itemId = params.detailId;
-    const [csrftoken, setCsrftoken] = useState("");
+    //const [csrftoken, setCsrftoken] = useState("");
+    const { accessToken } = useContext(AuthContext);
     const [item, setItem] = useState([]);
     const [number, setNumber] = useState(1);
     const [orderCreated, setOrderCreated] = useState("");
 
     useEffect(() => {
         getItem();
-        getCSRFToken();
-    }, [itemId]);
+        //getCSRFToken();
+    }, []);
 
+    /*
     const getCSRFToken = () => {
         fetch("http://localhost:8000/csrf", {
             credentials: "include",
@@ -30,6 +34,19 @@ const Detail = () => {
                 console.log(error);
             });
     };
+    */
+    const getItem = async () => {
+        const response = await fetch(`http://localhost:8000/items/${itemId}/`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${accessToken}`,
+            },
+        });
+        const data = await response.json();
+        console.log("Data", data);
+        setItem(data);
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -37,9 +54,10 @@ const Detail = () => {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "X-CSRFToken": csrftoken,
+                Authorization: `Bearer ${accessToken}`,
+                //"X-CSRFToken": csrftoken,
             },
-            credentials: "include",
+            //credentials: "include",
             body: JSON.stringify({
                 quantity: number,
                 item: item.url,
@@ -58,21 +76,15 @@ const Detail = () => {
         }
     };
 
-    const getItem = async () => {
-        const response = await fetch(`http://localhost:8000/items/${itemId}`);
-        const data = await response.json();
-        console.log("Data", data);
-        setItem(data);
-    };
-
     const updateItem = async () => {
         const requestOptions = {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
-                "X-CSRFToken": csrftoken,
+                Authorization: `Bearer ${accessToken}`,
+                //"X-CSRFToken": csrftoken,
             },
-            credentials: "include",
+            //credentials: "include",
             body: JSON.stringify({
                 stock: item.stock - number,
             }),

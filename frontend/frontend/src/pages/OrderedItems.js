@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import SavedItem from "../components/SavedItem";
+import AuthContext from "../context/AuthContext";
 
 const OrderItems = () => {
     const navigate = useNavigate();
-    const [csrftoken, setCsrftoken] = useState("");
+    const { accessToken } = useContext(AuthContext);
+    //const [csrftoken, setCsrftoken] = useState("");
     const [order, setOrder] = useState([]);
     const [customerInfo, setCustomerInfo] = useState([]);
     const [items, setItems] = useState([]);
@@ -17,9 +19,10 @@ const OrderItems = () => {
     useEffect(() => {
         getOrderedItems();
         getShipping();
-        getCSRFToken();
+        //getCSRFToken();
     }, []);
 
+    /*
     const getCSRFToken = () => {
         fetch("http://localhost:8000/csrf", {
             credentials: "include",
@@ -33,14 +36,16 @@ const OrderItems = () => {
                 console.log(error);
             });
     };
+    */
 
     const getShipping = async () => {
         const requestOptions = {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
+                Authorization: `Bearer ${accessToken}`,
             },
-            credentials: "include",
+            //credentials: "include",
         };
         const response = await fetch(
             "http://localhost:8000/shipping/",
@@ -63,8 +68,9 @@ const OrderItems = () => {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
+                Authorization: `Bearer ${accessToken}`,
             },
-            credentials: "include",
+            //credentials: "include",
         };
         const response = await fetch(
             "http://localhost:8000/order/",
@@ -93,9 +99,10 @@ const OrderItems = () => {
             method: "DELETE",
             headers: {
                 "Content-Type": "application/json",
-                "X-CSRFToken": csrftoken,
+                Authorization: `Bearer ${accessToken}`,
+                //"X-CSRFToken": csrftoken,
             },
-            credentials: "include",
+            //credentials: "include",
         };
         const response = await fetch(
             `http://localhost:8000/order-item/${id}/`,
@@ -122,9 +129,10 @@ const OrderItems = () => {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
-                "X-CSRFToken": csrftoken,
+                Authorization: `Bearer ${accessToken}`,
+                //"X-CSRFToken": csrftoken,
             },
-            credentials: "include",
+            //credentials: "include",
             body: JSON.stringify({
                 stock: stockValue + orderItemId.quantity,
             }),
@@ -177,9 +185,10 @@ const OrderItems = () => {
                     method: "PUT",
                     headers: {
                         "Content-Type": "application/json",
-                        "X-CSRFToken": csrftoken,
+                        Authorization: `Bearer ${accessToken}`,
+                        //"X-CSRFToken": csrftoken,
                     },
-                    credentials: "include",
+                    //credentials: "include",
                     body: JSON.stringify({
                         sold: stockNum + itemQuantity,
                     }),
@@ -229,9 +238,10 @@ const OrderItems = () => {
             method: "PATCH",
             headers: {
                 "Content-Type": "application/json",
-                "X-CSRFToken": csrftoken,
+                Authorization: `Bearer ${accessToken}`,
+                //"X-CSRFToken": csrftoken,
             },
-            credentials: "include",
+            //credentials: "include",
             body: JSON.stringify({ ordered: true, ordered_date: date }),
         };
         const response = await fetch(

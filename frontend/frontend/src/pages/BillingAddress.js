@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Link } from "react-router-dom";
+import AuthContext from "../context/AuthContext";
 
 const BillingAddress = () => {
-    const [csrftoken, setCsrftoken] = useState("");
+    const { accessToken } = useContext(AuthContext);
+    //const [csrftoken, setCsrftoken] = useState("");
     const [address, setAddress] = useState("");
     const [apt, setApt] = useState("");
     const [city, setCity] = useState("");
@@ -14,10 +16,11 @@ const BillingAddress = () => {
     const [value, setValue] = useState(0);
 
     useEffect(() => {
-        getCSRFToken();
+        //getCSRFToken();
         getBilling();
     }, []);
 
+    /*  
     const getCSRFToken = () => {
         fetch("http://localhost:8000/csrf", {
             credentials: "include",
@@ -30,14 +33,15 @@ const BillingAddress = () => {
                 console.log(error);
             });
     };
+    */
 
     const getBilling = async () => {
         const requestOptions = {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
+                Authorization: `Bearer ${accessToken}`,
             },
-            credentials: "include",
         };
         const response = await fetch(
             "http://localhost:8000/shipping/",
@@ -80,9 +84,10 @@ const BillingAddress = () => {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "X-CSRFToken": csrftoken,
+                Authorization: `Bearer ${accessToken}`,
+                //"X-CSRFToken": csrftoken,
             },
-            credentials: "include",
+            //credentials: "include",
             body: JSON.stringify({
                 billing: true,
                 user_default_billing: defaultBilling,
@@ -109,9 +114,10 @@ const BillingAddress = () => {
             method: "PATCH",
             headers: {
                 "Content-Type": "application/json",
-                "X-CSRFToken": csrftoken,
+                Authorization: `Bearer ${accessToken}`,
+                //"X-CSRFToken": csrftoken,
             },
-            credentials: "include",
+            //credentials: "include",
             body: JSON.stringify({ user_default_billing: true, default: true }),
         };
         const response = await fetch(

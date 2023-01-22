@@ -1,18 +1,21 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import SavedItem from "../components/SavedItem";
 import { Link } from "react-router-dom";
+import AuthContext from "../context/AuthContext";
 
 const ItemCart = () => {
+    const { accessToken } = useContext(AuthContext);
     const [items, setItems] = useState([]);
-    const [csrftoken, setCsrftoken] = useState("");
+    //const [csrftoken, setCsrftoken] = useState("");
     const [itemDetailList, setItemDetailList] = useState("");
     const [total, setTotal] = useState(0);
 
     useEffect(() => {
         getCartItems();
-        getCSRFToken();
+        //getCSRFToken();
     }, []);
 
+    /*
     const getCSRFToken = () => {
         fetch("http://localhost:8000/csrf", {
             credentials: "include",
@@ -26,6 +29,7 @@ const ItemCart = () => {
                 console.log(error);
             });
     };
+    */
 
     const getCartItems = async () => {
         //console.log("csrf", csrftoken);
@@ -33,8 +37,9 @@ const ItemCart = () => {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
+                Authorization: `Bearer ${accessToken}`,
             },
-            credentials: "include",
+            //credentials: "include",
         };
 
         const response = await fetch(
@@ -74,9 +79,10 @@ const ItemCart = () => {
             method: "DELETE",
             headers: {
                 "Content-Type": "application/json",
-                "X-CSRFToken": csrftoken,
+                Authorization: `Bearer ${accessToken}`,
+                //"X-CSRFToken": csrftoken,
             },
-            credentials: "include",
+            //credentials: "include",
         };
         const response = await fetch(
             `http://localhost:8000/order-item/${id}`,
@@ -103,9 +109,10 @@ const ItemCart = () => {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
-                "X-CSRFToken": csrftoken,
+                Authorization: `Bearer ${accessToken}`,
+                //"X-CSRFToken": csrftoken,
             },
-            credentials: "include",
+            //credentials: "include",
             body: JSON.stringify({
                 stock: singleItem.stock + orderItemId.quantity,
             }),

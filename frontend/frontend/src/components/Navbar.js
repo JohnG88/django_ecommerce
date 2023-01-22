@@ -1,15 +1,16 @@
 import React, { useContext, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { UserContext } from "./UserLoggedInContext";
+import AuthContext from "../context/AuthContext";
+//import { UserContext } from "./UserLoggedInContext";
 
-export function Navbar() {
-    const [userData, setUserData] = useContext(UserContext);
+export default function Navbar() {
     const navigate = useNavigate();
+    let { user, logoutUser } = useContext(AuthContext);
 
     // useEffect(() => {
     //   logout();
     // }, [userData]);
-
+    /*  
     const logout = () => {
         fetch("http://localhost:8000/logout", {
             credentials: "include",
@@ -24,6 +25,7 @@ export function Navbar() {
                 console.log(err);
             });
     };
+    */
 
     return (
         <>
@@ -31,12 +33,12 @@ export function Navbar() {
                 <li>
                     <Link to="/">Home</Link>
                 </li>
-                {userData.user ? (
+                {user ? (
                     <>
                         <a href="#">
-                            <li onClick={logout}>Logout</li>
+                            <li onClick={logoutUser}>Logout</li>
                         </a>
-                        <li>{userData.user}</li>
+                        <li>{user.username}</li>
                     </>
                 ) : (
                     <li>

@@ -1,15 +1,18 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
+import AuthContext from "../context/AuthContext";
 
 const OrderPlaced = () => {
-    const [csrftoken, setCsrftoken] = useState("");
+    const { accessToken } = useContext(AuthContext);
+    //const [csrftoken, setCsrftoken] = useState("");
     const [order, setOrder] = useState([]);
     const [orderItems, setOrderItems] = useState([]);
 
     useEffect(() => {
-        getCSRFToken();
+        //getCSRFToken();
         getOrder();
     }, []);
 
+    /*
     const getCSRFToken = () => {
         fetch("http://localhost:8000/csrf", {
             credentials: "include",
@@ -23,14 +26,16 @@ const OrderPlaced = () => {
                 console.log(error);
             });
     };
+    */
 
     const getOrder = async () => {
         const requestOptions = {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
+                Authorization: `Bearer ${accessToken}`,
             },
-            credentials: "include",
+            //credentials: "include",
         };
         const response = await fetch(
             "http://localhost:8000/order-placed/",
