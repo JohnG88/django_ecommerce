@@ -18,13 +18,13 @@ const Register = () => {
                     name="password"
                     placeholder="Enter Password"
                 />
-                {/*
+
                 <input
                     type="password"
                     name="re_password"
                     placeholder="Re-enter Password"
                 />
-                */}
+
                 <input type="submit" />
             </form>
         </div>

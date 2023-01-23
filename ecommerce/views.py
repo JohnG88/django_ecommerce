@@ -47,7 +47,18 @@ class MyTokenObtainPairView(TokenObtainPairView):
 
 class RegisterAPIView(APIView):
     def post(self, request):
-        serializer = UserSerializer(data=request.data)
+        data = request.data
+        
+        password = data['password']
+        re_password = data['re_password']
+
+        if password != re_password:
+            return Response({
+                'error': 'Passwords do not match.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+
+        serializer = UserSerializer(data=data)
         if serializer.is_valid():
             user = serializer.save()
             if user:
@@ -62,7 +73,6 @@ class LoginAPIView(APIView):
         password = request.data.get('password', None)
         if username is None or password is None:
             return JsonResponse({'detail': 'Please provide username and password.'})
-
         user = authenticate(username=username, password=password)
         if user is None:
             return JsonResponse({'detail': 'Invalid credentials.'}, status=400)

@@ -54,6 +54,7 @@ export const AuthProvider = ({ children }) => {
                 username: e.target.username.value,
                 email: e.target.email.value,
                 password: e.target.password.value,
+                re_password: e.target.re_password.value,
             }),
         });
         const data = await response.json();
