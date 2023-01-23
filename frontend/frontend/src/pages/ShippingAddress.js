@@ -46,6 +46,7 @@ const ShippingAddress = () => {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
+                Authorization: `Bearer ${accessToken}`,
             },
             //credentials: "include",
         };

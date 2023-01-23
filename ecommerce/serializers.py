@@ -1,15 +1,23 @@
 from django.contrib.auth.models import Group
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from .models import Item, Order, OrderItem, ShippingAddress
+from .models import CustomUser, Item, Order, OrderItem, ShippingAddress
 from decimal import Decimal
 
 # Can use primary keys and various other relationships, but hyperlinking is good RESTful design
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = get_user_model()
-        fields = ['url', 'username', 'first_name', 'last_name', 'email', 'groups']
+        model = CustomUser
+        fields = ('username', 'email', 'password',)
+        #extra_kwargs = {'password': {'write_only': True}}
+
+    def create(self, validated_data):
+        user = CustomUser(username=validated_data['username'], email=validated_data['email'])
+        user.set_password(validated_data['password'])
+        user.save()
+        return user
+
 
 
 class GroupSerializer(serializers.HyperlinkedModelSerializer):

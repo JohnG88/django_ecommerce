@@ -12,8 +12,11 @@ ADDRESS_CHOICES = (
 
 
 class CustomUser(AbstractUser):
-    pass
     # add additional fields here
+
+    #def save(self, *args, **kwargs):
+    #    self.set_password(self.password)
+    #    super.save(*args, **kwargs)
 
     def __str__(self):
         return self.username

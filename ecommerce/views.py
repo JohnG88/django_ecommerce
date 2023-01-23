@@ -1,6 +1,7 @@
 from operator import add
 from django.contrib.auth.models import Group
 from django.contrib.auth import get_user_model, authenticate, login, logout
+from django.contrib.auth.models import User
 from django.http import Http404, JsonResponse
 from django.middleware.csrf import get_token
 from django.utils import timezone
@@ -17,7 +18,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .serializers import UserSerializer, GroupSerializer, ItemSerializer, OrderItemSerializer, OrderSerializer, ShippingAddressSerializer
-from .models import Item, OrderItem, Order, ShippingAddress
+from .models import Item, OrderItem, Order, ShippingAddress, CustomUser
 
 def is_valid_form(values):
     valid = True
@@ -44,6 +45,16 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
 
+class RegisterAPIView(APIView):
+    def post(self, request):
+        serializer = UserSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            if user:
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 '''
 class LoginAPIView(APIView):
     def post(self, request):
@@ -58,6 +69,55 @@ class LoginAPIView(APIView):
         login(request, user)
         return JsonResponse({'detail': 'Successfully logged in.', 'user': request.user.username})
 '''
+
+'''
+class RegisterView(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+
+    def post(self, request):
+        try:
+            data = request.data
+
+            first_name = data['first_name']
+            last_name = data['last_name']
+            username = data['username']
+            email = data['email']
+            password = data['password']
+            re_password = data['re_password']
+
+            if password == re_password:
+                user = CustomUser.objects.create(
+                    first_name=first_name,
+                    last_name=last_name,
+                    username=username,
+                    email=email,
+                    password=password,
+                )
+                user.save()
+                return Response({
+                    'success': 'Account created successfully.'
+                }, status=status.HTTP_201_CREATED)
+            else:
+                return Response({
+                    'error': 'Password do not match.'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+        except:
+            return Response({
+                'error': 'Something went wrong when trying to register account.'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+'''
+'''
+{
+ "first_name": "Coolio",
+ "last_name": "Mando",
+ "username": "CoolMan",
+ "password":  "qwertghj",
+ "re_password": "qwertghj",
+}
+'''
+
 
 class UserViewSet(viewsets.ModelViewSet):
     """

@@ -5,6 +5,7 @@ import Detail from "./pages/Detail";
 import AddOrder from "./pages/AddOrder";
 import ItemCart from "./pages/ItemCart";
 //import Login from "./pages/LoginPage";
+import Register from "./pages/Register";
 import LoginA from "./pages/LoginA";
 import DashBoard, { Dashboard } from "./pages/Dashboard";
 import OrderItems from "./pages/OrderedItems";
@@ -25,6 +26,7 @@ function App() {
                     <Routes>
                         {/*<Route path="/" element={<App />}>*/}
                         <Route path="login" element={<LoginA />} />
+                        <Route path="register" element={<Register />} />
                         <Route path="home" element={<HomePage />} />
 
                         <Route path="/" element={<PrivateRoute />}>

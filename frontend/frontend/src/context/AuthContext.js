@@ -43,6 +43,23 @@ export const AuthProvider = ({ children }) => {
     };
     */
 
+    const registerUser = async (e) => {
+        e.preventDefault();
+        const response = await fetch("http://localhost:8000/register", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                username: e.target.username.value,
+                email: e.target.email.value,
+                password: e.target.password.value,
+            }),
+        });
+        const data = await response.json();
+        console.log("register data", data);
+    };
+
     const loginUser = async (e) => {
         e.preventDefault();
         console.log("Form submitted");
@@ -135,6 +152,7 @@ export const AuthProvider = ({ children }) => {
     }, [accessToken, loading]);
 
     const contextData = {
+        registerUser: registerUser,
         user: user,
         loginUser: loginUser,
         logoutUser: logoutUser,
