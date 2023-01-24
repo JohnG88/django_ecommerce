@@ -1,12 +1,14 @@
 from django.contrib.auth.models import Group
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
+import rest_framework
 from .models import CustomUser, Item, Order, OrderItem, ShippingAddress
 from decimal import Decimal
 
+#from rest_framework.response import Response 
 # Can use primary keys and various other relationships, but hyperlinking is good RESTful design
 
-class UserSerializer(serializers.ModelSerializer):
+class CreateUserSerializer(serializers.ModelSerializer):
     #re_password = serializers.CharField()
     class Meta:
         model = CustomUser
@@ -29,6 +31,10 @@ class UserSerializer(serializers.ModelSerializer):
         return user
 
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['id', 'username', 'email', 'groups', 'age', 'avatar']
 
 class GroupSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:

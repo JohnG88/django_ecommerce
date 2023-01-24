@@ -65,3 +65,7 @@
     margin: 2rem;
     padding: 1em;
 }
+
+.profile-image {
+    border-radius: 50%;
+}

@@ -7,6 +7,7 @@ import ItemCart from "./pages/ItemCart";
 //import Login from "./pages/LoginPage";
 import Register from "./pages/Register";
 import LoginA from "./pages/LoginA";
+import Profile from "./pages/Profile";
 import DashBoard, { Dashboard } from "./pages/Dashboard";
 import OrderItems from "./pages/OrderedItems";
 import ShippingAddress from "./pages/ShippingAddress";
@@ -31,6 +32,7 @@ function App() {
 
                         <Route path="/" element={<PrivateRoute />}>
                             <Route path="dashboard" element={<Dashboard />} />
+                            <Route path="profile" element={<Profile />} />
                             <Route
                                 path="/detail/:detailId/"
                                 element={<Detail />}

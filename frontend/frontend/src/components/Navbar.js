@@ -38,7 +38,9 @@ export default function Navbar() {
                         <a href="#">
                             <li onClick={logoutUser}>Logout</li>
                         </a>
-                        <li>{user.username}</li>
+                        <li>
+                            <Link to="profile">{user.username}</Link>
+                        </li>
                     </>
                 ) : (
                     <>

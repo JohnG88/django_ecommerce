@@ -17,7 +17,7 @@ from rest_framework.authentication import SessionAuthentication, BasicAuthentica
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import UserSerializer, GroupSerializer, ItemSerializer, OrderItemSerializer, OrderSerializer, ShippingAddressSerializer
+from .serializers import CreateUserSerializer, UserSerializer, GroupSerializer, ItemSerializer, OrderItemSerializer, OrderSerializer, ShippingAddressSerializer
 from .models import Item, OrderItem, Order, ShippingAddress, CustomUser
 
 def is_valid_form(values):
@@ -58,11 +58,11 @@ class RegisterAPIView(APIView):
             }, status=status.HTTP_400_BAD_REQUEST)
         
 
-        serializer = UserSerializer(data=data)
+        serializer = CreateUserSerializer(data=data)
         if serializer.is_valid():
             user = serializer.save()
             if user:
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
+                return Response({'detail': 'User created successfully.'}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -134,7 +134,7 @@ class UserViewSet(viewsets.ModelViewSet):
         API endpoint that allows users to be viewed or edited.
     """
 
-    queryset = get_user_model().objects.all().order_by('-date_joined')
+    queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAuthenticated,)
 

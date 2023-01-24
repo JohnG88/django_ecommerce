@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, UserManager
 from django.conf import settings
 from django.core.validators import FileExtensionValidator
 from decimal import Decimal
@@ -10,9 +10,16 @@ ADDRESS_CHOICES = (
     ('S', 'Shipping'),
 )
 
+'''
+class UserDataManager(UserManager):
+    def get_queryset(self):
+        return User.objects.all()
+'''
 
 class CustomUser(AbstractUser):
     # add additional fields here
+    age = models.PositiveIntegerField(blank=True, null=True)
+    avatar = models.ImageField(default='avatar.png', upload_to='avatars')
 
     #def save(self, *args, **kwargs):
     #    self.set_password(self.password)

@@ -28,6 +28,10 @@ export const AuthProvider = ({ children }) => {
             : null
     );
 
+    const [profileData, setProfileData] = useState([]);
+
+    const [profileAvatar, setProfileAvatar] = useState([]);
+
     const [loading, setLoading] = useState(true);
 
     /* 
@@ -95,6 +99,51 @@ export const AuthProvider = ({ children }) => {
     };
     console.log("user", user);
 
+    const userProfile = async () => {
+        //e.preventDefault();
+        const userId = user.user_id;
+
+        const options = {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${accessToken}`,
+            },
+        };
+
+        const response = await fetch(
+            `http://localhost:8000/users/${userId}/`,
+            options
+        );
+        const data = await response.json();
+        console.log("profile response", data);
+        setProfileData(data);
+    };
+
+    const changeAvatar = async (e) => {
+        e.preventDefault();
+
+        const userId = user.user_id;
+        const avatarFile = e.target.files[0];
+
+        const formData = new FormData();
+        formData.append("avatar", avatarFile);
+        console.log("avatar file name", avatarFile);
+
+        const response = await fetch(`http://localhost:8000/users/${userId}/`, {
+            method: "PATCH",
+            headers: {
+                //"Content-Type": "multipart/form-data",
+                Authorization: `Bearer ${accessToken}`,
+            },
+            body: formData,
+        });
+
+        const data = await response.json();
+        console.log("profile avatar", data);
+        setProfileAvatar(data);
+    };
+
     const logoutUser = () => {
         setUser(null);
         setAccessToken(null);
@@ -156,6 +205,10 @@ export const AuthProvider = ({ children }) => {
         registerUser: registerUser,
         user: user,
         loginUser: loginUser,
+        userProfile: userProfile,
+        profileData: profileData,
+        changeAvatar: changeAvatar,
+        profileAvatar: profileAvatar,
         logoutUser: logoutUser,
         accessToken: accessToken,
         //updateToken: updateToken,
