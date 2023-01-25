@@ -1,10 +1,18 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import AuthContext from "../context/AuthContext";
 
 const Profile = () => {
     //const { user, accessToken } = useContext(AuthContext);
-    const { userProfile, profileData, changeAvatar, profileAvatar } =
-        useContext(AuthContext);
+    const {
+        userProfile,
+        profileData,
+        changeAvatar,
+        profileAvatar,
+        deleteAvatar,
+    } = useContext(AuthContext);
+
+    const ref = useRef();
 
     console.log("profile page avatar", profileAvatar);
 
@@ -15,6 +23,10 @@ const Profile = () => {
     useEffect(() => {
         userProfile();
     }, [profileAvatar]);
+
+    const handleRef = () => {
+        ref.current.value = "";
+    };
 
     /*
     const userProfile = async () => {
@@ -49,11 +61,31 @@ const Profile = () => {
                 height="150px"
             />
             <div>
-                <input type="file" onChange={changeAvatar} />
+                <label htmlFor="avatar-file">Custom avatar file</label>
+            </div>
+            <div>
+                <input
+                    id="avatar-file"
+                    style={{ visibility: "hidden" }}
+                    type="file"
+                    ref={ref}
+                    onChange={changeAvatar}
+                />
+            </div>
+            <div>
+                <button
+                    onClick={(e) => {
+                        deleteAvatar();
+                        handleRef();
+                    }}
+                >
+                    Delete Avatar
+                </button>
             </div>
             <h4>User id: {profileData.id}</h4>
             <h4>User age: {profileData.age}</h4>
             <h4>Hello {profileData.username}</h4>
+            <Link to="/shipping">Addresses</Link>
             {/*
             <h2>Hello {userData.username}</h2>
 

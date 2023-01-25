@@ -27,6 +27,20 @@ class CustomUser(AbstractUser):
 
     def __str__(self):
         return self.username
+    '''
+    def delete(self, *args, **kwargs):
+        self.avatar.delete()
+        super().delete(*args, **kwargs)
+    
+    @property
+    def imageURL(self):
+        try:
+            url = self.avatar.url
+        except:
+            url = ''
+        return url
+    '''
+
 
 class Item(models.Model):
     name = models.CharField(max_length=100)

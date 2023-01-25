@@ -138,6 +138,40 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     permission_classes = (IsAuthenticated,)
 
+
+    def partial_update(self, request, pk):
+        instance = CustomUser.objects.get(id=request.user.id)
+        
+        if 'avatar' in request.data:
+            avatar = request.data.get('avatar')
+
+            if instance.avatar != 'avatar.png':
+                instance.avatar.delete()
+
+            instance.avatar.save(avatar.name, avatar, save=True)
+        
+            #instance.save()
+        #serializer = self.get_serializer(instance, data=request.data, partial=True)
+
+
+        if 'delete_avatar' in request.data:
+            delete_avatar = request.data.get('delete_avatar')
+
+            if instance.avatar != 'avatar.png':
+                instance.avatar.delete()
+
+            instance.avatar = instance._meta.get_field('avatar').default
+            #instance.avatar = None
+            instance.save()
+
+        serializer = UserSerializer(instance)
+
+        #serializer.is_valid(raise_exception=True)
+        #self.perform_update(serializer)
+
+        
+        return Response(serializer.data)
+
 class GroupViewSet(viewsets.ModelViewSet):
 
     """

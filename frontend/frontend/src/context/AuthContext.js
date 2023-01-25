@@ -28,7 +28,7 @@ export const AuthProvider = ({ children }) => {
             : null
     );
 
-    const [profileData, setProfileData] = useState([]);
+    const [profileData, setProfileData] = useState(() => []);
 
     const [profileAvatar, setProfileAvatar] = useState([]);
 
@@ -141,6 +141,29 @@ export const AuthProvider = ({ children }) => {
 
         const data = await response.json();
         console.log("profile avatar", data);
+        //setProfileAvatar([]);
+        setProfileAvatar(data);
+    };
+
+    const deleteAvatar = async (e) => {
+        //e.preventDefault();
+        const userId = user.user_id;
+        //const fileValue = e.target.value;
+        //console.log("file value", fileValue);
+
+        const response = await fetch(`http://localhost:8000/users/${userId}/`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify({ delete_avatar: true }),
+        });
+        const data = await response.json();
+        console.log("avatar response", response);
+        console.log("avatar data", data);
+        //setProfileAvatar([]);
+
         setProfileAvatar(data);
     };
 
@@ -208,6 +231,7 @@ export const AuthProvider = ({ children }) => {
         userProfile: userProfile,
         profileData: profileData,
         changeAvatar: changeAvatar,
+        deleteAvatar: deleteAvatar,
         profileAvatar: profileAvatar,
         logoutUser: logoutUser,
         accessToken: accessToken,

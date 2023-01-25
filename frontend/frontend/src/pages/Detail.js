@@ -11,7 +11,7 @@ const Detail = () => {
     //const [csrftoken, setCsrftoken] = useState("");
     const { accessToken } = useContext(AuthContext);
     const [item, setItem] = useState([]);
-    const [number, setNumber] = useState(1);
+    const [number, setNumber] = useState(0);
     const [orderCreated, setOrderCreated] = useState("");
 
     useEffect(() => {
@@ -107,17 +107,22 @@ const Detail = () => {
             <div className="notes-list">
                 <div>
                     <ItemList key={item.id} item={item} />
-                    <form onSubmit={handleSubmit}>
-                        <input
-                            type="number"
-                            id="number"
-                            min="1"
-                            onChange={(e) => setNumber(e.target.value)}
-                            value={number}
-                            max={item.stock}
-                        />
-                        <button>Purchase Item</button>
-                    </form>
+
+                    {item.stock > 0 ? (
+                        <form onSubmit={handleSubmit}>
+                            <input
+                                type="number"
+                                id="number"
+                                min={0}
+                                onChange={(e) => setNumber(e.target.value)}
+                                value={number}
+                                max={item.stock}
+                            />
+                            <button>Purchase Item</button>
+                        </form>
+                    ) : (
+                        <h5>Out of stock</h5>
+                    )}
                 </div>
             </div>
         </div>
