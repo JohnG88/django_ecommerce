@@ -1,0 +1,9 @@
+- model:
+    class Sample(models.Model):
+        date = models.DateTimeNow()
+
+1. Can use to search by days:
+    Sample.objects.filter(date__range=["2020-01-01", "2020-01-31"])
+
+2. Can filter month wise:
+   Sample.objects.filter(date__year="2020", date__month="01")

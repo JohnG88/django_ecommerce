@@ -1,17 +1,28 @@
 import React from "react";
 // import { Link } from "react-router-dom";
+import Card from "react-bootstrap/Card";
+import ListGroup from "react-bootstrap/ListGroup";
 
 const ItemList = ({ item }) => {
     return (
-        <div className="item-list">
-            <h4>{item.id}</h4>
-	          <h5>{item.name}</h5>
-	          <img src={item.image} style={{width:200, height: 200}}></img>
-	          <p>$ {item.price}</p>
-	          <p>{item.description}</p>
-	          <p>In stock: {item.stock}</p>
-	          <p>How many sold: {item.sold}</p>
-	      </div>
+        <Card>
+            <Card.Img
+                variant="top"
+                src={item.image}
+                style={{
+                    objectFit: "cover",
+                    height: "300px",
+                }}
+            />
+            <Card.Body>
+                <Card.Text className="item-info">{item.description}</Card.Text>
+                <Card.Text className="item-info">{item.price}</Card.Text>
+            </Card.Body>
+            <ListGroup className="list-group-flush">
+                <ListGroup.Item>In stock: {item.stock}</ListGroup.Item>
+                <ListGroup.Item>How many sold: {item.sold}</ListGroup.Item>
+            </ListGroup>
+        </Card>
     );
 };
 

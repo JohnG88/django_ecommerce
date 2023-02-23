@@ -1,4 +1,9 @@
 import React, { useState, useEffect, useContext } from "react";
+import { Link } from "react-router-dom";
+import Card from "react-bootstrap/Card";
+import Container from "react-bootstrap/Container";
+import Col from "react-bootstrap/Col";
+import Row from "react-bootstrap/Row";
 import AuthContext from "../context/AuthContext";
 
 const OrderPlaced = () => {
@@ -58,24 +63,56 @@ const OrderPlaced = () => {
 
     return (
         <>
-            <h4>Thank you for your purchase.</h4>
-            {order.map((info) => (
-                <div key={info.id}>
-                    <p>Order id: {info.id}</p>
-                    <p>
-                        Address: {info.get_address.address} Apt{" "}
-                        {info.get_address.apt} {info.get_address.city},{" "}
-                        {info.get_address.state} {info.get_address.zipcode}
-                    </p>
-                    {orderItems.map((data) => (
-                        <div key={data.id}>
-                            <p>Order items id: {data.id}</p>
-                            <p>Order item name: {data.item_detail.name}</p>
-                            <p>Quantity: {data.quantity}</p>
+            <Container>
+                <h4>Thank you for your purchase.</h4>
+                <Row>
+                    {order.map((info) => (
+                        <div key={info.id}>
+                            <Col>
+                                <Card>
+                                    <h5>
+                                        Items sent to chosen Shipping Address
+                                    </h5>
+                                    <p>
+                                        {info.get_address.address} Apt{" "}
+                                        {info.get_address.apt}{" "}
+                                        {info.get_address.city},{" "}
+                                        {info.get_address.state}{" "}
+                                        {info.get_address.zipcode}
+                                    </p>
+                                </Card>
+                            </Col>
+                            <Col>
+                                {orderItems.map((data) => (
+                                    <Card key={data.id}>
+                                        <Row>
+                                            <Col>
+                                                <Card.Img
+                                                    src={data.item_detail.image}
+                                                />
+                                            </Col>
+                                            <Col>
+                                                <p>
+                                                    Order item name:{" "}
+                                                    {data.item_detail.name}
+                                                </p>
+
+                                                <p>Quantity: {data.quantity}</p>
+                                            </Col>
+                                            <Col>
+                                                {data.item_detail.description}
+                                            </Col>
+                                        </Row>
+                                    </Card>
+                                ))}
+                            </Col>
                         </div>
                     ))}
-                </div>
-            ))}
+                </Row>
+                <Link to={"/home/"}>
+                    <h4>Continue Shopping</h4>
+                </Link>
+            </Container>
         </>
     );
 };

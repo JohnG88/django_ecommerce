@@ -18,6 +18,7 @@ class UserDataManager(UserManager):
 
 class CustomUser(AbstractUser):
     # add additional fields here
+    stripe_customer_id = models.CharField(max_length=100, blank=True)
     age = models.PositiveIntegerField(blank=True, null=True)
     avatar = models.ImageField(default='avatar.png', upload_to='avatars')
 
@@ -43,6 +44,8 @@ class CustomUser(AbstractUser):
 
 
 class Item(models.Model):
+    stripe_product_id = models.CharField(max_length=100)
+    stripe_price_id = models.CharField(max_length=100, blank=True)
     name = models.CharField(max_length=100)
     image = models.ImageField(upload_to="item_images", validators=[FileExtensionValidator(['png', 'jpg', 'jpeg'])])
     price = models.DecimalField(max_digits=6, decimal_places=2, default=Decimal('0.00'))
@@ -60,6 +63,9 @@ class OrderItem(models.Model):
     ordered = models.BooleanField(default=False)
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     quantity = models.IntegerField(default=1)
+    quantity_returned = models.IntegerField(default=0)
+    partial_refund = models.BooleanField(default=False)
+    refunded = models.BooleanField(default=False)
 
     def __str__(self):
         return f'{self.quantity} of {self.item.name}'
@@ -79,12 +85,13 @@ class Order(models.Model):
     received = models.BooleanField(default=False)    
     refund_requested = models.BooleanField(default=False)    
     refund_granted = models.BooleanField(default=False)
+    stripe_charge_id = models.CharField(max_length=100, blank=True)
 
     class Meta:
         ordering = ('-ordered_date',)
 
     def __str__(self):
-        return f"{self.customer.username}"
+        return f"{self.customer} | {self.id}"
    
     def get_total(self):
         total = 0
@@ -108,4 +115,4 @@ class ShippingAddress(models.Model):
         verbose_name_plural = 'ShippingAddresses'
 
     def __str__(self):
-        return f'{self.customer.username} | {self.state} | {self.address_type}'
+        return f'{self.customer} | {self.state} | {self.address_type}'

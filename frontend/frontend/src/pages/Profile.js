@@ -1,7 +1,10 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import AuthContext from "../context/AuthContext";
-
+import Col from "react-bootstrap/Col";
+import Row from "react-bootstrap/Row";
+import Container from "react-bootstrap/Container";
+import Table from "react-bootstrap/Table";
 const Profile = () => {
     //const { user, accessToken } = useContext(AuthContext);
     const {
@@ -53,45 +56,56 @@ const Profile = () => {
 
     return (
         <>
-            <h1>No</h1>
-            <img
-                className="profile-image"
-                src={profileData.avatar}
-                width="150px"
-                height="150px"
-            />
-            <div>
-                <label htmlFor="avatar-file">Custom avatar file</label>
-            </div>
-            <div>
-                <input
-                    id="avatar-file"
-                    style={{ visibility: "hidden" }}
-                    type="file"
-                    ref={ref}
-                    onChange={changeAvatar}
-                />
-            </div>
-            <div>
-                <button
-                    onClick={(e) => {
-                        deleteAvatar();
-                        handleRef();
-                    }}
-                >
-                    Delete Avatar
-                </button>
-            </div>
-            <h4>User id: {profileData.id}</h4>
-            <h4>User age: {profileData.age}</h4>
-            <h4>Hello {profileData.username}</h4>
-            <Link to="/shipping">Addresses</Link>
-            {/*
-            <h2>Hello {userData.username}</h2>
-
-            <h4>User id: {userData.id}</h4>
-            <h4>User age: {userData.age}</h4>
-            */}
+            <Row>
+                <Col>
+                    <h1>No</h1>
+                    <img
+                        className="profile-image"
+                        src={profileData.avatar}
+                        width="150px"
+                        height="150px"
+                    />
+                    <div>
+                        <label htmlFor="avatar-file">Custom avatar file</label>
+                    </div>
+                    <div>
+                        <input
+                            id="avatar-file"
+                            style={{ visibility: "hidden" }}
+                            type="file"
+                            ref={ref}
+                            onChange={changeAvatar}
+                        />
+                    </div>
+                    <div>
+                        <button
+                            onClick={(e) => {
+                                deleteAvatar();
+                                handleRef();
+                            }}
+                        >
+                            Delete Avatar
+                        </button>
+                    </div>
+                </Col>
+                <Col>
+                    <Table>
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>{profileData.username}</td>
+                            </tr>
+                        </tbody>
+                    </Table>
+                </Col>
+                <Col>
+                    <Link to="/shipping">Addresses</Link>
+                </Col>
+            </Row>
         </>
     );
 };

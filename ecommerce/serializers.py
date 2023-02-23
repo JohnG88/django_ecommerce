@@ -54,7 +54,7 @@ class OrderItemSerializer(serializers.HyperlinkedModelSerializer):
     #get_total_item_price = serializers.DecimalField(max_digits=6, decimal_places=2, default=Decimal('0.00'))
     class Meta:
         model = OrderItem
-        fields = ['id', 'customer', 'customer_detail', 'ordered', 'item', 'item_detail', 'quantity', 'get_total_item_price']
+        fields = ['id', 'customer', 'customer_detail', 'ordered', 'item', 'item_detail', 'quantity', 'quantity_returned', 'get_total_item_price', 'refunded', 'partial_refund']
         read_only_fields = ('customer',)
 
 class ShippingAddressSerializer(serializers.HyperlinkedModelSerializer):
@@ -74,4 +74,8 @@ class OrderSerializer(serializers.HyperlinkedModelSerializer):
         fields = ['id', 'customer', 'customer_detail', 'items', 'order_items', 'get_total', 'ordered_date', 'ordered', 'shipping_address', 'get_address', 'billing_address', 'being_delivered', 'received', 'refund_requested', 'refund_granted']
         read_only_fields = ('customer', 'items',)
 
+class CardSerializer(serializers.Serializer):
+    last4 = serializers.CharField()
+    exp_month = serializers.IntegerField()
+    exp_year = serializers.IntegerField()
 

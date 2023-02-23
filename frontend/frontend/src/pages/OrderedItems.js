@@ -1,5 +1,18 @@
 import React, { useEffect, useState, useContext } from "react";
+import {
+    CardElement,
+    useElements,
+    useStripe,
+    PaymentElement,
+} from "@stripe/react-stripe-js";
 import { Link, useNavigate } from "react-router-dom";
+import Container from "react-bootstrap/Container";
+import Col from "react-bootstrap/Col";
+import Row from "react-bootstrap/Row";
+import Card from "react-bootstrap/Card";
+import Form from "react-bootstrap/Form";
+import Button from "react-bootstrap/Button";
+import InputGroup from "react-bootstrap/InputGroup";
 import SavedItem from "../components/SavedItem";
 import AuthContext from "../context/AuthContext";
 
@@ -15,10 +28,14 @@ const OrderItems = () => {
     const [shippingInfo, setShippingInfo] = useState([]);
     const [billingInfo, setBillingInfo] = useState([]);
     const [itemIdNum, setItemidNum] = useState([]);
+    const [error, setError] = useState(null);
+    const stripe = useStripe();
+    const elements = useElements();
 
     useEffect(() => {
         getOrderedItems();
         getShipping();
+        //getCards();
         //getCSRFToken();
     }, []);
 
@@ -37,6 +54,18 @@ const OrderItems = () => {
             });
     };
     */
+
+    const getCards = async () => {
+        const response = await fetch("http://localhost:8000/cards", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${accessToken}`,
+            },
+        });
+        const data = await response.json();
+        console.log("cards", data);
+    };
 
     const getShipping = async () => {
         const requestOptions = {
@@ -233,6 +262,13 @@ const OrderItems = () => {
         const orderId = order.map((num) => num.id);
         const date = new Date();
 
+        const card = elements.getElement(CardElement);
+
+        const { paymentMethod } = await stripe.createPaymentMethod({
+            type: "card",
+            card: card,
+        });
+
         console.log("order id", orderId);
         const requestOptions = {
             method: "PATCH",
@@ -242,7 +278,11 @@ const OrderItems = () => {
                 //"X-CSRFToken": csrftoken,
             },
             //credentials: "include",
-            body: JSON.stringify({ ordered: true, ordered_date: date }),
+            body: JSON.stringify({
+                ordered: true,
+                ordered_date: date,
+                payment_method_id: paymentMethod.id,
+            }),
         };
         const response = await fetch(
             `http://localhost:8000/order/${orderId}/`,
@@ -255,65 +295,42 @@ const OrderItems = () => {
         navigate("/order-placed/");
     };
 
+    const handleChange = (e) => {
+        if (e.error) {
+            setError(e.error.message);
+        } else {
+            setError(null);
+        }
+    };
+
+    const inputStyle = {
+        iconColor: "#c4f0ff",
+        color: "#fff",
+        fontWeight: "500",
+        fontFamily: "Roboto, Open Sans, Segoe UI, sans-serif",
+        fontSize: "15px",
+        fontSmoothing: "antialiased",
+        ":-webkit-autofill": {
+            color: "#fce883",
+        },
+        "::placeholder": {
+            color: "#87BBFD",
+        },
+        invalid: {
+            iconColor: "#FFC7EE",
+            color: "#FFC7EE",
+        },
+    };
+
     return (
-        <div>
-            {items.length > 0 ? (
-                <>
-                    {order.map((info) => (
-                        <p key={info.id}>Order id: {info.id}</p>
-                    ))}
-                    {items.map((item) => (
-                        <div key={item.id}>
-                            <div>
-                                <SavedItem
-                                    user={item.customer}
-                                    item={item}
-                                    r_items={item.item_detail}
-                                />
-                                <div>
-                                    <form>
-                                        <button
-                                            onClick={(e) =>
-                                                handleDelete(
-                                                    e,
-                                                    item.id,
-                                                    item.item_detail.id
-                                                )
-                                            }
-                                        >
-                                            Delete
-                                        </button>
-                                        <p>Order item id: {item.id}</p>
-                                        <p>
-                                            item number: {item.item_detail.id}
-                                        </p>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-
-                    <div>
-                        <h4>Total: ${total}</h4>
-                    </div>
-                    {/*
-            {customerInfo.map((u_address) => (
-                <div key={u_address.id}>
-                    <p>{u_address.address}</p>
-                </div>
-            ))}
-            */}
-                    <form onSubmit={updateOrder}>
-                        <button>Place Order</button>
-                    </form>
-
-                    <Link to={"/shipping/"}>
-                        <div className="ship-info-div">
-                            {shippingInfo.length > 0 ? (
-                                <p>Shipping address</p>
-                            ) : (
-                                <p>Add a shipping address.</p>
-                            )}
+        <Container>
+            <div className="mt-5 mb-3 d-flex gap-3 justify-content-evenly align-items-baseline">
+                <div>
+                    <Row className="mb-3">
+                        <Col>
+                            <h3>Shipping address</h3>
+                        </Col>
+                        <Col>
                             {shippingInfo.map((info) => (
                                 <div key={info.id}>
                                     <div>
@@ -325,8 +342,138 @@ const OrderItems = () => {
                                     </div>
                                 </div>
                             ))}
+                        </Col>
+                        <Col>
+                            {" "}
+                            <Link to={"/shipping/"}>
+                                {shippingInfo.length > 0 ? (
+                                    <p>Change</p>
+                                ) : (
+                                    <p>Add a shipping address.</p>
+                                )}
+                            </Link>
+                        </Col>
+                    </Row>
+                    <hr />
+                    {items.length > 0 ? (
+                        <>
+                            <h4 className="mb-3">Review Items</h4>
+                            {items.map((item) => (
+                                <Card className="mb-2" key={item.id}>
+                                    <Row>
+                                        <Col>
+                                            <div>
+                                                <Card.Img
+                                                    src={item.item_detail.image}
+                                                    style={{ width: "200px" }}
+                                                />
+                                            </div>
+                                        </Col>
+                                        <Col className="mid-col-checkout">
+                                            <p>{item.item_detail.name}</p>
+                                            <p>
+                                                {item.item_detail.description}
+                                            </p>{" "}
+                                            <Form>
+                                                <InputGroup>
+                                                    <Form.Control
+                                                        type="number"
+                                                        id="number2"
+                                                        min={1}
+                                                        max={item.quantity}
+                                                        value={item.quantity}
+                                                    />
+                                                    <InputGroup.Text>
+                                                        Qty.
+                                                    </InputGroup.Text>
+                                                </InputGroup>
+                                            </Form>
+                                        </Col>
+                                        <Col>
+                                            <div>
+                                                <form>
+                                                    <button
+                                                        onClick={(e) =>
+                                                            handleDelete(
+                                                                e,
+                                                                item.id,
+                                                                item.item_detail
+                                                                    .id
+                                                            )
+                                                        }
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                    <p>
+                                                        Order item id: {item.id}
+                                                    </p>
+                                                    <p>
+                                                        item number:{" "}
+                                                        {item.item_detail.id}
+                                                    </p>
+                                                </form>
+                                            </div>
+                                        </Col>
+                                    </Row>
+                                </Card>
+                            ))}{" "}
+                        </>
+                    ) : (
+                        <p>No items to order.</p>
+                    )}
+                </div>
+                <Card className="payment-div">
+                    <div className="order-sum-content">
+                        <h3>Order Summary</h3>
+                        <p className="order-sum-p">Items</p>
+                        <p className="order-sum-p">Shipping and Handling</p>
+                        <p className="order-sum-p">Total before tax:</p>
+                        <p className="order-sum-p">
+                            Estimated tax to be collected:
+                        </p>
+                    </div>
+                    <hr />
+                    <div className="order-sum-content">
+                        <h5>Order total: {total}</h5>
+                    </div>
+                    <hr />
+                    <Form onSubmit={updateOrder}>
+                        <div className="form-row">
+                            <label htmlFor="card-element">
+                                Credit or debit card
+                            </label>
+                            <CardElement
+                                id="card-element"
+                                onChange={handleChange}
+                                options={{
+                                    style: {
+                                        base: inputStyle,
+                                    },
+                                }}
+                            />
+                            <div className="card-error" role="alert">
+                                {error}
+                            </div>
                         </div>
-                    </Link>
+                        <Button variant="success" type="submit">
+                            Place Order
+                        </Button>
+                    </Form>
+                    {/*<form>
+                        <PaymentElement />
+                    </form>*/}
+                </Card>
+            </div>
+
+            {/*
+            {customerInfo.map((u_address) => (
+                <div key={u_address.id}>
+                    <p>{u_address.address}</p>
+                </div>
+            ))}
+            */}
+
+            {/*
                     <Link to={"/billing/"}>
                         <div>
                             {billingInfo.map((info) => (
@@ -343,11 +490,8 @@ const OrderItems = () => {
                             ))}
                         </div>
                     </Link>
-                </>
-            ) : (
-                <p>No items to order.</p>
-            )}
-        </div>
+                    */}
+        </Container>
     );
 };
 

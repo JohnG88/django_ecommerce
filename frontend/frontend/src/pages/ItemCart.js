@@ -1,6 +1,14 @@
 import React, { useState, useEffect, useContext } from "react";
 import SavedItem from "../components/SavedItem";
 import { Link } from "react-router-dom";
+import Card from "react-bootstrap/Card";
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
+import Button from "react-bootstrap/Button";
+import Container from "react-bootstrap/Container";
+import Table from "react-bootstrap/Table";
+import Form from "react-bootstrap/Form";
+import InputGroup from "react-bootstrap/InputGroup";
 import AuthContext from "../context/AuthContext";
 
 const ItemCart = () => {
@@ -129,48 +137,165 @@ const ItemCart = () => {
     //console.log("Item detail", items.item_detail);
     //june 7, 23, jul 6, 21?, aug 4, 19, 30, sep 16
     return (
-        <div>
+        <>
             {items.length > 0 ? (
                 <>
-                    {items.map((item) => (
-                        <div key={item.id}>
-                            <div>
-                                <SavedItem
-                                    user={item.customer}
-                                    item={item}
-                                    r_items={item.item_detail}
-                                />
-                                <div>
-                                    <form>
-                                        <button
-                                            onClick={(e) =>
-                                                handleDelete(
-                                                    e,
-                                                    item.id,
-                                                    item.item_detail.id
-                                                )
-                                            }
-                                        >
-                                            Delete
-                                        </button>
-                                        <p>Order id: {item.id}</p>
-                                        <p>
-                                            item number: {item.item_detail.id}
-                                        </p>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
+                    {/*
+                    <Container>
+                        {items.map((item) => (
+                            <Card key={item.id}>
+                                <Container>
+                                    <Row>
+                                        <Col>
+                                            <div>
+                                                <Card.Img
+                                                    src={item.item_detail.image}
+                                                    style={{ width: "200px" }}
+                                                />
+                                            </div>
+                                        </Col>
+                                        <Col>
+                                            <Card>
+                                                <form>
+                                                    <button
+                                                        onClick={(e) =>
+                                                            handleDelete(
+                                                                e,
+                                                                item.id,
+                                                                item.item_detail
+                                                                    .id
+                                                            )
+                                                        }
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                    <p>Order id: {item.id}</p>
+                                                    <p>
+                                                        item number:{" "}
+                                                        {item.item_detail.id}
+                                                    </p>
+                                                </form>
+                                            </Card>
+                                        </Col>
+                                    </Row>
+                                </Container>
+                            </Card>
+                        ))}
+                    </Container>
                     <h3>Total: {total}</h3>
+
+                    <Link to="/ordered-items/">
+                        <Button variant="info">View Order</Button>
+                    </Link>*/}
+
+                    <section className="d-flex align-items-baseline justify-content-around mt-5">
+                        <section>
+                            <Table
+                                striped="columns"
+                                className="shop-cart-table"
+                            >
+                                <thead>
+                                    <tr>
+                                        <th>
+                                            <h1>Shopping Cart</h1>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                {items.map((item) => (
+                                    <tbody key={item.id}>
+                                        <tr>
+                                            <td>
+                                                <Row>
+                                                    <Col>
+                                                        <Card.Img
+                                                            className="mt-2 mb-2"
+                                                            src={
+                                                                item.item_detail
+                                                                    .image
+                                                            }
+                                                            style={{
+                                                                width: "200px",
+                                                            }}
+                                                        />
+                                                    </Col>
+                                                    <Col md={4}>
+                                                        <p>
+                                                            {
+                                                                item.item_detail
+                                                                    .name
+                                                            }
+                                                        </p>
+                                                        <p>
+                                                            {
+                                                                item.item_detail
+                                                                    .description
+                                                            }
+                                                        </p>
+                                                        <Form>
+                                                            <InputGroup>
+                                                                <Form.Control
+                                                                    type="number"
+                                                                    id="number2"
+                                                                    min={1}
+                                                                    max={
+                                                                        item.quantity
+                                                                    }
+                                                                    value={
+                                                                        item.quantity
+                                                                    }
+                                                                />
+                                                                <InputGroup.Text>
+                                                                    Qty.
+                                                                </InputGroup.Text>
+                                                            </InputGroup>
+                                                        </Form>
+                                                    </Col>
+                                                    <Col>
+                                                        $
+                                                        {item.item_detail.price}
+                                                    </Col>
+                                                </Row>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                ))}
+                            </Table>
+
+                            <div className="subtotal-div">
+                                <h5>Subtotal: ${total}</h5>
+                            </div>
+                        </section>
+                        <div className="col-span-offset">
+                            <Container>
+                                <Card className="subtotal-side-card d-flex justify-content-center align-items-center">
+                                    <Row className="mb-4">
+                                        <h5>Subtotal: ${total}</h5>
+                                    </Row>
+                                    <Row>
+                                        <Link to="/ordered-items/">
+                                            <Button
+                                                className="p-checkout-btn"
+                                                variant="warning"
+                                            >
+                                                Proceed to checkout
+                                            </Button>
+                                        </Link>
+                                    </Row>
+                                </Card>
+                            </Container>
+                        </div>
+                    </section>
                 </>
             ) : (
-                <p>No items in Cart</p>
+                <>
+                    <h2>No items in Cart</h2>
+
+                    <Link to="/home/">
+                        <Button variant="info">Add some items</Button>
+                    </Link>
+                </>
             )}
-            <Link to="/ordered-items/">
-                <button>View Order</button>
-            </Link>
-        </div>
+        </>
     );
 };
 

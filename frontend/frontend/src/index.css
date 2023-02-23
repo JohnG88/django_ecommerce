@@ -80,11 +80,13 @@ code {
     border: 1px solid white;
 }
 
+/*
 @media screen and (min-width: 576px) {
     .products {
         grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     }
 }
+*/
 
 .product {
     background: var(--clr-white);
@@ -94,4 +96,179 @@ code {
 .ordered-item {
     display: flex;
     justify-content: space-around;
+}
+
+.item-info {
+    text-align: left;
+}
+
+.flush-button {
+    width: 100%;
+}
+
+.footer {
+    background-color: #f8f8f8;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin-top: 10vh;
+}
+
+.footer-div {
+    margin-top: 30vh;
+}
+/*
+.left-col {
+    background-color: green;
+}
+*/
+
+/*
+.mid-col {
+    background-color: #202020;
+}
+*/
+
+/*
+.right-col {
+    background-color: yellow;
+}
+*/
+
+.store-col {
+    text-align: right;
+}
+
+.eng-col {
+    text-align: left;
+}
+
+.footer-header {
+    background-color: #9999cc;
+}
+
+.detail-card-div {
+    /*background-color: red;*/
+}
+
+.detail-info-div {
+    /*background-color: green;*/
+    /*padding-left: 100px;*/
+    /*padding-right: 200px;*/
+}
+.detail-left-col {
+    background-color: blue;
+}
+
+.detail-mid-col {
+    background-color: yellow;
+}
+
+.detail-right-col {
+    background-color: green;
+}
+
+.form-group-label {
+    text-align: left;
+}
+.main-refund-card {
+    margin-bottom: 5rem;
+}
+.main-card-refund-header {
+    background-color: #383838;
+    /*margin-top: -2.5rem;*/
+    /*margin-bottom: -8rem;*/
+}
+
+/*
+.refund-button {
+    background-color: red;
+}
+*/
+
+.refund-image-item {
+    width: 200px;
+}
+/*
+.refund-item-q {
+    width: 50%;
+}
+*/
+
+.register-login-div {
+    padding-top: 50px;
+}
+
+.register-login-form-card {
+    width: 40%;
+    text-align: left;
+}
+.subtotal-div {
+    text-align: right;
+}
+
+/*
+.shop-cart-table {
+    background-color: green;
+}
+*/
+.subtotal-side-card {
+    height: 10rem;
+    width: 20rem;
+}
+/*
+.col-span-offset {
+    background-color: red;
+}
+*/
+.mid-col-checkout {
+    text-align: left;
+}
+
+.payment-div {
+    width: 25rem;
+}
+
+.order-sum-content {
+    text-align: left;
+    padding-left: 1rem;
+}
+
+.order-sum-p {
+    margin-bottom: -0.3rem;
+}
+
+#card-element {
+    /*background-color: green;*/
+}
+
+/*
+.dropdown-div {
+    background-color: green;
+}
+*/
+
+.order-p {
+    font-size: 18px;
+}
+/*
+.div-single-refund-info {
+    background-color: green;
+}
+*/
+.card-single-refund-info {
+    width: 40rem;
+}
+
+.refund-btn-div {
+    width: 20rem;
+}
+
+.card-refund-amount {
+    width: 20rem;
+}
+
+.remove-link-decorations {
+    text-decoration: none;
 }

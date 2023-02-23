@@ -1,4 +1,7 @@
-from operator import add
+#from operator import add
+import stripe
+import datetime
+from django.conf import settings
 from django.contrib.auth.models import Group
 from django.contrib.auth import get_user_model, authenticate, login, logout
 from django.contrib.auth.models import User
@@ -17,8 +20,10 @@ from rest_framework.authentication import SessionAuthentication, BasicAuthentica
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import CreateUserSerializer, UserSerializer, GroupSerializer, ItemSerializer, OrderItemSerializer, OrderSerializer, ShippingAddressSerializer
+from .serializers import CreateUserSerializer, UserSerializer, GroupSerializer, ItemSerializer, OrderItemSerializer, OrderSerializer, ShippingAddressSerializer, CardSerializer
 from .models import Item, OrderItem, Order, ShippingAddress, CustomUser
+
+stripe.api_key = settings.STRIPE_SECRET_KEY
 
 def is_valid_form(values):
     valid = True
@@ -205,6 +210,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         print(f"queryset {instance}")
         # read data from request
         self.request.data.get("ordered", None)
+        payment_method_id = self.request.data.get('payment_method_id', None)
         #print(instance.query)
         ##updated_instance = serializer.save()
         #print(f"updated data {updated_instance}")
@@ -221,6 +227,28 @@ class OrderViewSet(viewsets.ModelViewSet):
         address_billing_qs = ShippingAddress.objects.get(customer_id=self.request.user.id, address_type='B', default=True)
         print(f"billing address {address_billing_qs}")
         
+        '''
+        add stripe purchasing here
+        '''
+        # get all stripe product ids, stripe price ids and quantity
+        all_ordered_items = single_main_order.items.all()
+        for ordered_item in all_ordered_items:
+            print(ordered_item.item.stripe_product_id)
+
+        stripe_payment_intent = stripe.PaymentIntent.create(
+            customer=single_main_order.customer.stripe_customer_id,
+            payment_method=payment_method_id,
+            currency='usd',
+            amount=int(single_main_order.get_total() * 100),
+            confirm=True
+        )
+        single_main_order.stripe_charge_id = stripe_payment_intent.latest_charge
+
+        print(stripe_payment_intent)
+
+        
+        
+
         single_main_order.shipping_address = address_shipping_qs
         single_main_order.billing_address = address_billing_qs
         single_main_order.ordered = True
@@ -249,6 +277,7 @@ class OrderItemViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = self.queryset
         user_order_items = queryset.filter(customer_id=self.request.user.id, ordered=False)
+        #user_order_items = queryset.filter(customer_id=self.request.user.id)
         return user_order_items
 
     def perform_create(self, serializer):
@@ -338,6 +367,7 @@ class ShippingAddressViewSet(viewsets.ModelViewSet):
                     shipping_address = address_qs[0]
                     order.shipping_address = shipping_address
                     order.save()
+                    return JsonResponse({'detail': " Default Shipping address saved to order."})
                 else:
                     return JsonResponse({"detail": "No default shipping address available."})
             else:
@@ -460,6 +490,20 @@ class ShippingAddressViewSet(viewsets.ModelViewSet):
 
         return JsonResponse({'detail': 'updated address'})
 
+class CardView(APIView):
+    def get(self, request):
+        customer = CustomUser.objects.get(id=request.user.id)
+        #cards = stripe.Customer.list_sources(customer.stripe_customer_id, object="card", limit=3)
+        #print(f"cards {cards}")
+        payment_methods = stripe.Customer.list_payment_methods(customer.stripe_customer_id, type="card")
+        print(f"payment methods {payment_methods.data}")
+        #cards = payment_methods.data
+        #card_serializer = CardSerializer(cards, many=True)
+
+        return JsonResponse({"payment methods": payment_methods})
+
+
+
 
 
 class OrderPlacedViewSet(viewsets.ModelViewSet):
@@ -472,9 +516,86 @@ class OrderPlacedViewSet(viewsets.ModelViewSet):
         latest_order = queryset.filter(customer_id=self.request.user.id)[:1]
         return latest_order
 
+
+
     #def get_object(self):
     #    queryset = self.get_queryset()
     #    return get_object_or_404(queryset)
+
+
+class RefundOrderViewset(viewsets.ModelViewSet):
+    permission_classes = (IsAuthenticated,)
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
+    
+    def get_queryset(self):
+        current_year = self.request.query_params.get('year')
+
+        if current_year == None:
+            current_year = datetime.datetime.now().date().year
+        
+        print(f"get year {current_year}")
+        
+        queryset = self.queryset
+        refunded_orders = queryset.filter(customer_id=self.request.user.id, ordered_date__year=current_year)
+        return refunded_orders
+    '''
+    def post(self, request):
+        data = request.data
+        print(f"year data {data}")
+        year = data['year']
+        queryset = self.queryset.filter(customer_id=request.user.id, ordered_date__year=year)
+        serializer = OrderSerializer(queryset, context={'request': request})
+
+        return Response(serializer.data)
+    '''
+
+class RefundItemOrderViewset(viewsets.ModelViewSet):
+    #permission_classes = (IsAuthenticated,)
+    queryset = OrderItem.objects.all()
+    serializer_class = OrderItemSerializer
+
+    def partial_update(self, request, pk):
+        instance = self.queryset.get(id=pk)
+        print(f"instance {instance}")
+        data = request.data
+
+        refund = data['refunded']
+        quantity_number = int(data['number'])
+        returned_quantity_number = int(data['quantity_returned'])
+        print(f"refund {refund}")
+        print(f"number {quantity_number}")
+        #order_item = instance(id=pk)
+
+        order = Order.objects.filter(items__id=instance.id)
+        print(f"order {order}")
+
+        for info in order:
+            stripe_charge = info.stripe_charge_id
+        
+        print(f"stripe charge {stripe_charge}")
+        
+        order.refund_request = True
+        
+       
+
+        stripe_refund = stripe.Refund.create(
+            charge=stripe_charge,
+            amount=int((instance.item.price * quantity_number) * 100)
+        )
+        instance.quantity_returned = instance.quantity_returned + returned_quantity_number
+        
+        if instance.quantity == instance.quantity_returned:
+            instance.refunded = refund
+        
+        instance.save()
+        serializer = OrderItemSerializer(instance, context={'request': request})
+
+        return Response(serializer.data)
+
+
+        
+
 
 '''
 glasseDetailItem(APIView):

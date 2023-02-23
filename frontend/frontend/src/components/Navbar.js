@@ -35,11 +35,21 @@ export default function Navbar() {
                 </li>
                 {user ? (
                     <>
+                        {/*
                         <a href="#">
                             <li onClick={logoutUser}>Logout</li>
                         </a>
+                        */}
+                        <li>
+                            <Link to="/login" onClick={logoutUser}>
+                                Logout
+                            </Link>
+                        </li>
                         <li>
                             <Link to="profile">{user.username}</Link>
+                        </li>
+                        <li>
+                            <Link to="refund">All Orders</Link>
                         </li>
                     </>
                 ) : (

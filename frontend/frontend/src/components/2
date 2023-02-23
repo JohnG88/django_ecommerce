@@ -1,0 +1,24 @@
+import Container from "react-bootstrap/Container";
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
+
+function Footer() {
+    return (
+        <footer className="footer">
+            This is a footer.
+            <Container>
+                <Row>
+                    <Col></Col>
+                    <Col>
+                        xs={5} <Col>First Column</Col>
+                        <Col>Second Column</Col>
+                        <Col>Third Column</Col>
+                    </Col>
+                    <Col></Col>
+                </Row>
+            </Container>
+        </footer>
+    );
+}
+
+export default Footer;

@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useContext } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import ItemList from "../components/ItemList";
+import Card from "react-bootstrap/Card";
+import Col from "react-bootstrap/Col";
+import Row from "react-bootstrap/Row";
+import Container from "react-bootstrap/Container";
 
 import AuthContext from "../context/AuthContext";
 
@@ -100,32 +104,43 @@ const Detail = () => {
     };
 
     return (
-        <div className="items">
-            <div className="items-header">
-                <h2 className="items-title">Items</h2>
-            </div>
-            <div className="notes-list">
-                <div>
-                    <ItemList key={item.id} item={item} />
-
-                    {item.stock > 0 ? (
-                        <form onSubmit={handleSubmit}>
-                            <input
-                                type="number"
-                                id="number"
-                                min={0}
-                                onChange={(e) => setNumber(e.target.value)}
-                                value={number}
-                                max={item.stock}
-                            />
-                            <button>Purchase Item</button>
-                        </form>
-                    ) : (
-                        <h5>Out of stock</h5>
-                    )}
-                </div>
-            </div>
-        </div>
+        <Container>
+            <Row>
+                <Col>
+                    <div className="detail-card-div">
+                        <Card.Img src={item.image} style={{ width: "500px" }} />
+                    </div>
+                </Col>
+                <Col>
+                    <div>
+                        {item.stock > 0 ? (
+                            <>
+                                <Card>
+                                    <p>{item.name}</p>
+                                    <p>{item.description}</p>
+                                    <p>Price: {item.price}</p>
+                                    <form onSubmit={handleSubmit}>
+                                        <input
+                                            type="number"
+                                            id="number"
+                                            min={0}
+                                            onChange={(e) =>
+                                                setNumber(e.target.value)
+                                            }
+                                            value={number}
+                                            max={item.stock}
+                                        />
+                                        <button>Purchase Item</button>
+                                    </form>
+                                </Card>
+                            </>
+                        ) : (
+                            <h5>Out of stock</h5>
+                        )}
+                    </div>
+                </Col>
+            </Row>
+        </Container>
     );
 };
 

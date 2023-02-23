@@ -1,6 +1,13 @@
 import React, { useState, useEffect, useContext } from "react";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import Card from "react-bootstrap/Card";
+import Col from "react-bootstrap/Col";
+import Row from "react-bootstrap/Row";
+import Button from "react-bootstrap/Button";
+import Container from "react-bootstrap/Container";
+import Form from "react-bootstrap/Form";
+import Accordion from "react-bootstrap/Accordion";
 import AuthContext from "../context/AuthContext";
 
 const ShippingAddress = () => {
@@ -71,16 +78,17 @@ const ShippingAddress = () => {
         setValue(e.target.value);
     };
     console.log("default shipping", defaultShipping);
-
+    /*  
     const checkDefaultCheckbox = (e) => {
         if (e.target.checked) {
             console.log("Checkbox is checked");
-            setCheckboxCheck(true);
+            setDefaultShipping(true);
         } else {
             console.log("Checkbox is not checked");
-            setCheckboxCheck(false);
+            setDefaultShipping(false);
         }
     };
+    */
     console.log("Checkbox", checkboxCheck);
 
     const handleSubmit = async (e) => {
@@ -111,7 +119,14 @@ const ShippingAddress = () => {
         );
         const data = await response.json();
         console.log("Shippping", data);
-        navigate("/ordered-items");
+        //navigate("/ordered-items");
+        setAddress("");
+        setApt("");
+        setCity("");
+        setState("");
+        setZipcode("");
+        setCheckboxCheck(false);
+        getShipping();
     };
 
     const updateDefault = async (e) => {
@@ -143,94 +158,152 @@ const ShippingAddress = () => {
     };
 
     return (
-        <div>
-            <div>
-                <div>
-                    <form onSubmit={(e) => updateDefault(e)}>
-                        {shippingAddress.map((info) => (
-                            <div key={info.id}>
-                                <div className="ship-info-div">
-                                    <div>
-                                        <label>
-                                            <input
-                                                type="radio"
-                                                name="demo"
-                                                value={info.id}
-                                                defaultChecked={info.default}
-                                                onClick={handleShippingChk}
-                                            />{" "}
-                                            Default shipping
-                                        </label>
-                                    </div>
-                                    <button>Set default address</button>
-                                    <p>Shipping address.</p>
-                                    <p>
-                                        {info.address}, {info.apt}, {info.city},{" "}
-                                        {info.state}, {info.zipcode}
-                                    </p>
-                                </div>
+        <>
+            <Container>
+                <Row>
+                    <Col>
+                        <div>
+                            <div>
+                                <form onSubmit={(e) => updateDefault(e)}>
+                                    {shippingAddress.map((info) => (
+                                        <Card key={info.id}>
+                                            <Row>
+                                                <Col>
+                                                    <label>
+                                                        <input
+                                                            type="radio"
+                                                            name="demo"
+                                                            value={info.id}
+                                                            defaultChecked={
+                                                                info.default
+                                                            }
+                                                            onClick={
+                                                                handleShippingChk
+                                                            }
+                                                        />{" "}
+                                                        Default shipping
+                                                    </label>
+                                                </Col>
+                                                <Col>
+                                                    <p>
+                                                        {info.address},{" "}
+                                                        {info.apt}, {info.city},{" "}
+                                                        {info.state},{" "}
+                                                        {info.zipcode}
+                                                    </p>
+                                                </Col>
+                                            </Row>
+                                        </Card>
+                                    ))}
+                                    <Button type="submit">
+                                        Set default address
+                                    </Button>
+                                </form>
                             </div>
-                        ))}
-                    </form>
-                </div>
-                <form id="shipping" onSubmit={handleSubmit}>
-                    <div>
-                        <div>
-                            <label>Address</label>
-                            <input
-                                type="text"
-                                value={address}
-                                onChange={(e) => setAddress(e.target.value)}
-                            />
                         </div>
-                        <div>
-                            <label>Apt.</label>
-                            <input
-                                type="text"
-                                value={apt}
-                                onChange={(e) => setApt(e.target.value)}
-                            />
-                        </div>
-                        <div>
-                            <label>City</label>
-                            <input
-                                type="text"
-                                value={city}
-                                onChange={(e) => setCity(e.target.value)}
-                            />
-                        </div>
-                        <div>
-                            <label>State</label>
-                            <input
-                                type="text"
-                                value={state}
-                                onChange={(e) => setState(e.target.value)}
-                            />
-                        </div>
-                        <div>
-                            <label>Zipcode</label>
-                            <input
-                                type="text"
-                                value={zipcode}
-                                onChange={(e) => setZipcode(e.target.value)}
-                            />
-                        </div>
-                    </div>
-                    <button>Save Shipping Address</button>
-                </form>
-                <label>
-                    <input
-                        type="checkbox"
-                        name="set_default_shipping"
-                        id="set_default_shipping"
-                        onChange={checkDefaultCheckbox}
-                        value={defaultShipping}
-                    />
-                    Set this address as default.
-                </label>
-            </div>
-            <Link to={"/ordered-items/"}>Go back to order</Link>
-        </div>
+                    </Col>
+                    <Col>
+                        <Link to={"/ordered-items/"}>Go back to order</Link>
+                        <Accordion>
+                            <Accordion.Item eventKey="0">
+                                <Accordion.Header>
+                                    Add New Address
+                                </Accordion.Header>
+                                <Accordion.Body>
+                                    <Form onSubmit={handleSubmit}>
+                                        <Card>
+                                            <Form.Group className="mb-2 form-group-label">
+                                                <Form.Label>Address</Form.Label>
+                                                <Form.Control
+                                                    placeholder="Address"
+                                                    value={address}
+                                                    onChange={(e) =>
+                                                        setAddress(
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                />
+                                            </Form.Group>
+
+                                            <Form.Group className="mb-2 form-group-label">
+                                                <Form.Label>Apt</Form.Label>
+                                                <Form.Control
+                                                    placeholder="Apt"
+                                                    value={apt}
+                                                    onChange={(e) =>
+                                                        setApt(e.target.value)
+                                                    }
+                                                />
+                                            </Form.Group>
+
+                                            <Form.Group className="mb-2 form-group-label">
+                                                <Form.Label>City</Form.Label>
+                                                <Form.Control
+                                                    placeholder="City"
+                                                    value={city}
+                                                    onChange={(e) =>
+                                                        setCity(e.target.value)
+                                                    }
+                                                />
+                                            </Form.Group>
+
+                                            <Form.Group className="mb-2 form-group-label">
+                                                <Form.Label>State</Form.Label>
+                                                <Form.Control
+                                                    placeholder="State"
+                                                    value={state}
+                                                    onChange={(e) =>
+                                                        setState(e.target.value)
+                                                    }
+                                                />
+                                            </Form.Group>
+
+                                            <Form.Group className="form-group-label">
+                                                <Form.Label>Zipcode</Form.Label>
+                                                <Form.Control
+                                                    placeholder="Zipcode"
+                                                    value={zipcode}
+                                                    onChange={(e) =>
+                                                        setZipcode(
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                />
+                                            </Form.Group>
+                                        </Card>
+                                        <Form.Group>
+                                            <Row xs="auto">
+                                                <Col>
+                                                    <Form.Check
+                                                        name="set_default_shipping"
+                                                        id="set_default_shipping"
+                                                        onChange={(e) =>
+                                                            setCheckboxCheck(
+                                                                e.target.checked
+                                                            )
+                                                        }
+                                                        checked={checkboxCheck}
+                                                    />
+                                                </Col>{" "}
+                                                <Col>
+                                                    <Form.Label>
+                                                        Set this Address as
+                                                        default.
+                                                    </Form.Label>
+                                                </Col>
+                                            </Row>
+                                        </Form.Group>
+                                        <Button type="submit">
+                                            Save Shipping Address
+                                        </Button>
+                                    </Form>
+                                </Accordion.Body>
+                            </Accordion.Item>
+                        </Accordion>
+                    </Col>
+                </Row>
+            </Container>
+        </>
     );
 
     //const radioButtons = [
