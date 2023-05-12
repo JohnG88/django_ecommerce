@@ -29,6 +29,7 @@ const ItemCart = () => {
     const [total, setTotal] = useState(0);
     const [spinner, setSpinner] = useState(false);
     const [isLoading, setIsLoading] = useState(null);
+    const [showButton, setShowButton] = useState(false);
     const [changedItemId, setChangedItemId] = useState(null);
     const [isInputValid, setIsInputValid] = useState(true);
 
@@ -73,7 +74,6 @@ const ItemCart = () => {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${accessToken}`,
             },
-            //credentials: "include",
         };
 
         const response = await fetch(`${url}/order-item/`, requestOptions);
@@ -85,7 +85,6 @@ const ItemCart = () => {
         });
 
         const quantityInOrder = data.map((num) => num.quantity);
-        console.log("quantity", quantityInOrder);
 
         // Add , 0 to reduce to not get TypeError: Reduce of empty array with no initial value.
         const totalPrice = stringToNum.reduce((total, item) => total + item, 0);
@@ -98,6 +97,7 @@ const ItemCart = () => {
         setItems(data);
         setItemDetailList(itemDetail);
         setTotal(totalPrice.toFixed(2));
+        setShowButton(false);
 
         setTimeout(() => {
             setSpinner(false);
@@ -105,8 +105,6 @@ const ItemCart = () => {
 
         setIsLoading(false);
     };
-
-    console.log("Items", items);
 
     const handleDelete = (e, orderId, itemId) => {
         updateStockOnDelete(orderId, itemId, itemDetailList, items);
@@ -159,25 +157,14 @@ const ItemCart = () => {
     */
 
     function handleQuantityChange(itemId, newQuantity) {
+        setShowButton(true);
         const updatedItems = items.map((item) => {
-            //console.log("item dot id", item.id);
-            //console.log("itemId", itemId);
-
             if (item.id === itemId) {
                 setIsInputValid(newQuantity < item.item_detail.stock_limit);
                 const prevQuantity = Number(item.quantity);
-                console.log("item detail stock", item.item_detail.stock);
-                console.log("prev quantity", prevQuantity);
-                console.log("new quant", newQuantity);
-                console.log(
-                    "full sum",
-                    item.item_detail.stock +
-                        (prevQuantity - Number(newQuantity))
-                );
                 const newStock =
                     item.item_detail.stock +
                     (prevQuantity - Number(newQuantity));
-                console.log("newStock", newStock);
                 return {
                     ...item,
                     quantity: Number(newQuantity),
@@ -190,6 +177,8 @@ const ItemCart = () => {
         setChangedItemId(itemId);
         setItems(updatedItems);
     }
+
+    console.log("items", items);
 
     //console.log("item id outside", changedItemId);
     /*
@@ -227,48 +216,47 @@ const ItemCart = () => {
     const handleSubmit = async (e, itemId) => {
         e.preventDefault();
         const singleOrder = items.find((item) => item.id === changedItemId);
-        console.log("single order outside if", singleOrder);
-        updateItem(singleOrder);
 
-        if (singleOrder.item_detail.stock >= 0) {
-            console.log("single order", singleOrder);
-            const singleItem = itemDetailList.find((x) => x.id === itemId);
-            const requestOptions = {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${accessToken}`,
-                },
-                body: JSON.stringify({
-                    quantity: Number(singleOrder.quantity),
-                    item: singleOrder.item_detail.url,
-                }),
-            };
-            const response = await fetch(
-                `${url}/order-item/${singleOrder.id}/`,
-                requestOptions
-            );
-            const data = await response.json();
-
-            console.log("handle submit data", data);
-
-            //if (!data.detail) {
-            getCartItems();
-            //}
+        if (singleOrder.quantity === 0) {
+            console.log("there is no quantity");
+            handleDelete(e, singleOrder.id, singleOrder.item_detail.id);
         } else {
-            throw new Error(
-                "Item's stock limit is " + singleOrder.item_detail.stock + "."
-            );
+            updateItem(singleOrder);
+
+            if (singleOrder.item_detail.stock >= 0) {
+                const requestOptions = {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${accessToken}`,
+                    },
+                    body: JSON.stringify({
+                        quantity: Number(singleOrder.quantity),
+                        item: singleOrder.item_detail.url,
+                    }),
+                };
+                const response = await fetch(
+                    `${url}/order-item/${singleOrder.id}/`,
+                    requestOptions
+                );
+                const data = await response.json();
+
+                console.log("handle submit data", data);
+
+                //if (!data.detail) {
+                getCartItems();
+                //}
+            } else {
+                throw new Error(
+                    "Item's stock limit is " +
+                        singleOrder.item_detail.stock +
+                        "."
+                );
+            }
         }
     };
 
     const updateItem = async (order) => {
-        //console.log("Item id", item.id);
-        //console.log("order id", order.id);
-        //console.log("item stock", item.stock);
-        console.log("stock from order", order.item_detail.stock);
-        console.log("order quantity", order.quantity);
-        //console.log("type of order quantity", typeof order.quantity);
         const requestOptions = {
             method: "PUT",
             headers: {
@@ -284,7 +272,6 @@ const ItemCart = () => {
             requestOptions
         );
         const data = await response.json();
-        console.log("update item data", data);
     };
 
     /*
@@ -411,37 +398,13 @@ const ItemCart = () => {
                                                                             .description
                                                                     }
                                                                 </p>{" "}
-                                                                <p>
-                                                                    {
-                                                                        item
-                                                                            .item_detail
-                                                                            .stock
-                                                                    }
-                                                                </p>
-                                                                <p>
-                                                                    {
-                                                                        item
-                                                                            .item_detail
-                                                                            .stock_limit
-                                                                    }
-                                                                </p>
-                                                                <Form
-                                                                    onSubmit={(
-                                                                        e
-                                                                    ) =>
-                                                                        handleSubmit(
-                                                                            e,
-                                                                            item
-                                                                                .item_detail
-                                                                                .id
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    <div className="qty-btn-group">
-                                                                        <div>
+                                                                <div className="qty-btn-group">
+                                                                    <div>
+                                                                        <Form>
                                                                             <InputGroup className="item-purchase-input">
                                                                                 <Form.Control
                                                                                     type="number"
+                                                                                    inputMode="numeric"
                                                                                     id="number2"
                                                                                     min={
                                                                                         1
@@ -469,33 +432,21 @@ const ItemCart = () => {
                                                                                     Qty.
                                                                                 </InputGroup.Text>{" "}
                                                                             </InputGroup>
-                                                                        </div>
-                                                                        <div>
-                                                                            <Form>
-                                                                                <Button
-                                                                                    style={{
-                                                                                        width: "95%",
-                                                                                    }}
-                                                                                    variant="danger"
-                                                                                    onClick={(
-                                                                                        e
-                                                                                    ) =>
-                                                                                        handleDelete(
-                                                                                            e,
-                                                                                            item.id,
-                                                                                            item
-                                                                                                .item_detail
-                                                                                                .id
-                                                                                        )
-                                                                                    }
-                                                                                >
-                                                                                    Delete
-                                                                                </Button>
-                                                                            </Form>
-                                                                        </div>
+                                                                        </Form>
+                                                                    </div>
+                                                                    {showButton && (
                                                                         <div>
                                                                             <Button
-                                                                                type="submit"
+                                                                                onClick={(
+                                                                                    e
+                                                                                ) =>
+                                                                                    handleSubmit(
+                                                                                        e,
+                                                                                        item
+                                                                                            .item_detail
+                                                                                            .id
+                                                                                    )
+                                                                                }
                                                                                 style={{
                                                                                     width: "95%",
                                                                                 }}
@@ -503,8 +454,32 @@ const ItemCart = () => {
                                                                                 Update
                                                                             </Button>
                                                                         </div>
+                                                                    )}
+
+                                                                    <div>
+                                                                        <Form>
+                                                                            <Button
+                                                                                style={{
+                                                                                    width: "95%",
+                                                                                }}
+                                                                                variant="danger"
+                                                                                onClick={(
+                                                                                    e
+                                                                                ) =>
+                                                                                    handleDelete(
+                                                                                        e,
+                                                                                        item.id,
+                                                                                        item
+                                                                                            .item_detail
+                                                                                            .id
+                                                                                    )
+                                                                                }
+                                                                            >
+                                                                                Delete
+                                                                            </Button>
+                                                                        </Form>
                                                                     </div>
-                                                                </Form>
+                                                                </div>
                                                             </Col>
                                                         </Row>
                                                     </td>

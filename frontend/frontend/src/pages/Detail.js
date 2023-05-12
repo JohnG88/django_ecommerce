@@ -123,7 +123,8 @@ const Detail = () => {
                                             <InputGroup className="item-purchase-input mt-2">
                                                 <Form.Control
                                                     type="number"
-                                                    min={0}
+                                                    inputMode="numeric"
+                                                    min={1}
                                                     onChange={(e) =>
                                                         setNumber(
                                                             e.target.value

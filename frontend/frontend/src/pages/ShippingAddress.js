@@ -152,7 +152,6 @@ const ShippingAddress = () => {
             requestOptions
         );
         const data = await response.json();
-        console.log("Updated value", data);
         getShipping();
     };
 

@@ -24,7 +24,6 @@ const OrderItems = () => {
     const navigate = useNavigate();
     const { accessToken, deleteOrderItem, updateStockOnDelete } =
         useContext(AuthContext);
-    //const [csrftoken, setCsrftoken] = useState("");
     const [order, setOrder] = useState([]);
     const [customerInfo, setCustomerInfo] = useState([]);
     const [items, setItems] = useState(null);
@@ -39,6 +38,7 @@ const OrderItems = () => {
     const [error, setError] = useState(null);
     const [spinner, setSpinner] = useState(null);
     const [changedItemId, setChangedItemId] = useState(null);
+    const [showButton, setShowButton] = useState(false);
     const stripe = useStripe();
     const elements = useElements();
 
@@ -78,7 +78,6 @@ const OrderItems = () => {
         };
         const response = await fetch(`${url}/order/`, requestOptions);
         const data = await response.json();
-        console.log("data", data);
         const dataItems = data.order_items;
 
         setOrder(data);
@@ -97,14 +96,12 @@ const OrderItems = () => {
         //console.log("numItems", numItems);
         //setNumberOfItems(getNumItems);
         setCustomerInfo(info);
+        setShowButton(false);
 
         setTimeout(() => {
             setSpinner(false);
         }, 2000);
     };
-
-    console.log("items", items);
-    //console.log("q items", numberOfItems);
 
     //const getNumItems = items.map((item) => item.quantity);
     //console.log("num of items", getNumItems);
@@ -176,23 +173,13 @@ const OrderItems = () => {
     */
 
     function handleQuantityChange(itemId, newQuantity) {
+        setShowButton(true);
         const updatedItems = items.map((item) => {
-            console.log("item dot id", item.id);
-            console.log("itemId", itemId);
             if (item.id === itemId) {
                 const prevQuantity = Number(item.quantity);
-                console.log("item stock", item.item_detail.stock);
-                console.log("prev quantity", prevQuantity);
-                console.log("new quantity", newQuantity);
-                console.log(
-                    "sum",
-                    item.item_detail.stock +
-                        (prevQuantity - Number(newQuantity))
-                );
                 const newStock =
                     item.item_detail.stock +
                     (prevQuantity - Number(newQuantity));
-                console.log("newStock", newStock);
                 return {
                     ...item,
                     quantity: Number(newQuantity),
@@ -209,40 +196,43 @@ const OrderItems = () => {
     const handleSubmit = async (e, orderId) => {
         e.preventDefault();
         const singleOrder = items.find((item) => item.id === changedItemId);
-        updateItem(singleOrder);
-        console.log("single order", singleOrder);
-        if (singleOrder.item_detail.stock >= 0) {
-            const singleItem = singleOrder.item_detail;
-            console.log("single item", singleItem);
-            const requestOptions = {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${accessToken}`,
-                    //"X-CSRFToken": csrftoken,
-                },
-                //credentials: "include",
-                body: JSON.stringify({
-                    quantity: Number(singleOrder.quantity),
-                    item: singleOrder.item_detail.url,
-                }),
-            };
-            const response = await fetch(
-                `${url}/order-item/${singleOrder.id}/`,
-                requestOptions
-            );
-            const data = await response.json();
-            console.log("handle submitted data", data);
-            //setOrderCreated(data);
-            //if (!data.detail) {
-            getOrderedItems();
-            //getShipping();
-            //navigate("/order-item/");
-            //}
+
+        if (singleOrder.quantity === 0) {
+            handleDelete(e, singleOrder.id, singleOrder.item_detail.id);
         } else {
-            throw new Error(
-                "Item's stock limit is " + singleOrder.item_detail.stock + "."
-            );
+            updateItem(singleOrder);
+            if (singleOrder.item_detail.stock >= 0) {
+                const requestOptions = {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${accessToken}`,
+                        //"X-CSRFToken": csrftoken,
+                    },
+                    //credentials: "include",
+                    body: JSON.stringify({
+                        quantity: Number(singleOrder.quantity),
+                        item: singleOrder.item_detail.url,
+                    }),
+                };
+                const response = await fetch(
+                    `${url}/order-item/${singleOrder.id}/`,
+                    requestOptions
+                );
+                const data = await response.json();
+                //setOrderCreated(data);
+                //if (!data.detail) {
+                getOrderedItems();
+                //getShipping();
+                //navigate("/order-item/");
+                //}
+            } else {
+                throw new Error(
+                    "Item's stock limit is " +
+                        singleOrder.item_detail.stock +
+                        "."
+                );
+            }
         }
     };
     const updateItem = async (order) => {
@@ -415,79 +405,85 @@ const OrderItems = () => {
                                                     <p>
                                                         {item.item_detail.stock}
                                                     </p>
-                                                    <Form
-                                                        onSubmit={(e) =>
-                                                            handleSubmit(
-                                                                e,
-                                                                item.item_detail
-                                                                    .id
-                                                            )
-                                                        }
-                                                    >
-                                                        <div className="qty-btn-group">
-                                                            <InputGroup className="item-purchase-input">
-                                                                <Form.Control
-                                                                    type="number"
-                                                                    id="number2"
-                                                                    min={1}
-                                                                    value={
-                                                                        item.quantity
-                                                                    }
-                                                                    max={
-                                                                        item
-                                                                            .item_detail
-                                                                            .stock_limit
-                                                                    }
-                                                                    onChange={(
-                                                                        e
-                                                                    ) =>
-                                                                        handleQuantityChange(
-                                                                            item.id,
-                                                                            e
-                                                                                .target
-                                                                                .value
-                                                                        )
-                                                                    }
-                                                                />
-                                                                <InputGroup.Text>
-                                                                    Qty.
-                                                                </InputGroup.Text>
-                                                            </InputGroup>{" "}
-                                                            <div>
-                                                                <Form>
-                                                                    <Button
-                                                                        style={{
-                                                                            width: "95%",
-                                                                        }}
-                                                                        variant="danger"
-                                                                        onClick={(
+                                                    <div className="qty-btn-group">
+                                                        <div>
+                                                            <Form>
+                                                                <InputGroup className="item-purchase-input">
+                                                                    <Form.Control
+                                                                        type="number"
+                                                                        inputMode="numeric"
+                                                                        id="number2"
+                                                                        min={1}
+                                                                        value={
+                                                                            item.quantity
+                                                                        }
+                                                                        max={
+                                                                            item
+                                                                                .item_detail
+                                                                                .stock_limit
+                                                                        }
+                                                                        onChange={(
                                                                             e
                                                                         ) =>
-                                                                            handleDelete(
-                                                                                e,
+                                                                            handleQuantityChange(
                                                                                 item.id,
-                                                                                item
-                                                                                    .item_detail
-                                                                                    .id
+                                                                                e
+                                                                                    .target
+                                                                                    .value
                                                                             )
                                                                         }
-                                                                    >
-                                                                        Delete
-                                                                    </Button>
-                                                                </Form>
-                                                            </div>{" "}
+                                                                    />
+                                                                    <InputGroup.Text>
+                                                                        Qty.
+                                                                    </InputGroup.Text>
+                                                                </InputGroup>{" "}
+                                                            </Form>{" "}
+                                                        </div>
+                                                        {showButton && (
                                                             <div>
                                                                 <Button
                                                                     style={{
                                                                         width: "95%",
                                                                     }}
-                                                                    type="submit"
+                                                                    onClick={(
+                                                                        e
+                                                                    ) =>
+                                                                        handleSubmit(
+                                                                            e,
+                                                                            item
+                                                                                .item_detail
+                                                                                .id
+                                                                        )
+                                                                    }
                                                                 >
                                                                     Update
                                                                 </Button>
                                                             </div>
-                                                        </div>
-                                                    </Form>{" "}
+                                                        )}
+                                                        <div>
+                                                            <Form>
+                                                                <Button
+                                                                    style={{
+                                                                        width: "95%",
+                                                                    }}
+                                                                    variant="danger"
+                                                                    onClick={(
+                                                                        e
+                                                                    ) =>
+                                                                        handleDelete(
+                                                                            e,
+                                                                            item.id,
+                                                                            item
+                                                                                .item_detail
+                                                                                .id
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    Delete
+                                                                </Button>
+                                                            </Form>
+                                                        </div>{" "}
+                                                    </div>
                                                 </Col>
                                             </Row>
                                         </Card>

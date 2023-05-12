@@ -20,19 +20,15 @@ const RefundItem = () => {
     const { accessToken } = useContext(AuthContext);
     const [orderItem, setOrderItem] = useState([]);
     const [item, setItem] = useState([]);
-    const [number, setNumber] = useState(0);
+    const [number, setNumber] = useState(1);
     const [itemQuantityNumber, setItemQuantityNumber] = useState(0);
     const [itemQuantReturnNum, setItemQuantReturnNum] = useState(0);
-    const [valueInput, setValueInput] = useState(0);
+    const [valueInput, setValueInput] = useState(1);
     const [spinner, setSpinner] = useState(null);
     const navigate = useNavigate();
     const params = useParams();
     const itemId = params.orderItemId;
     //const [numberReturn, setNumberReturn] = useState(0)
-
-    const pythonAnywhereRefundItemURL =
-        "https://johng.pythonanywhere.com/refund-item/";
-    const devRefundItemURL = "http://localhost:8000/refund-item/";
 
     useEffect(() => {
         if (
@@ -54,7 +50,6 @@ const RefundItem = () => {
         });
         const data = await response.json();
         setOrderItem(data);
-        console.log("Order item", data);
         //const itemDetail = data.map((s_item) => s_item.item_detail);
         const itemDetail = data.item_detail;
         setItem(itemDetail);
@@ -65,9 +60,6 @@ const RefundItem = () => {
             setSpinner(false);
         }, 1000);
     };
-
-    console.log("set quant num", itemQuantityNumber);
-    console.log("set quant return num", itemQuantReturnNum);
 
     const totalNumber = item.price * number;
     const initialNumber =
@@ -96,9 +88,13 @@ const RefundItem = () => {
         });
 
         const data = await response.json();
-        console.log("refunded data", data);
         navigate(`/refund-confirm/${itemId}`);
     };
+    {
+        /*
+                                                max={valueInput || 0}
+                                                */
+    }
 
     //console.log("returned items", numItemsReturned);
 
@@ -194,12 +190,12 @@ const RefundItem = () => {
                                             <Form.Control
                                                 type="number"
                                                 id="number1"
-                                                min={0}
+                                                min={1}
                                                 onChange={(e) =>
                                                     setNumber(e.target.value)
                                                 }
                                                 value={number}
-                                                max={valueInput || 0}
+                                                max={orderItem.quantity}
                                             />
                                             <InputGroup.Text>
                                                 Qty.

@@ -24,6 +24,7 @@ export default AuthContext;
 
 export const AuthProvider = ({ children }) => {
     const navigate = useNavigate();
+    const [contextError, setContextError] = useState(null);
 
     // get user info from access token
     //const [user, setUser] = useState(null);
@@ -104,7 +105,7 @@ export const AuthProvider = ({ children }) => {
             setUser(jwt_decode(data.access));
             navigate("/");
         } else {
-            alert("Something went wrong");
+            alert("Invalid Login Credentials");
         }
 
         //can also check response
@@ -236,27 +237,35 @@ export const AuthProvider = ({ children }) => {
     };
 
     const updateToken = async () => {
-        const response = await fetch(`${url}/api/token/refresh/`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ refresh: refreshToken }),
-        });
-        const data = await response.json();
+        try {
+            const response = await fetch(`${url}/api/token/refresh/`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ refresh: refreshToken }),
+            });
+            if (!response.ok) {
+                throw new Error("API request failed.");
+            }
+            const data = await response.json();
 
-        if (response.status === 200) {
-            setAccessToken(data.access);
-            localStorage.setItem("access", JSON.stringify(data.access));
+            if (response.status === 200) {
+                setAccessToken(data.access);
+                localStorage.setItem("access", JSON.stringify(data.access));
 
-            setUser(jwt_decode(data.access));
-        } else {
-            logoutUser();
-        }
+                setUser(jwt_decode(data.access));
+            } else {
+                logoutUser();
+            }
 
-        // call when loading is true on first render
-        if (loading) {
-            setLoading(false);
+            // call when loading is true on first render
+            if (loading) {
+                setLoading(false);
+            }
+        } catch (error) {
+            console.log(error.message);
+            setContextError(error.message);
         }
     };
 
@@ -277,6 +286,7 @@ export const AuthProvider = ({ children }) => {
     }, [accessToken, loading]);
 
     const contextData = {
+        contextError: contextError,
         registerUser: registerUser,
         user: user,
         loginUser: loginUser,

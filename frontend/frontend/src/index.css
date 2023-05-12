@@ -71,6 +71,17 @@ code {
     height: 100%;
 }
 
+/*---- Input type number ----*/
+/* Chromium & Safari*/
+input[type="number"]::-webkit-inner-spin-button {
+    display: none;
+}
+
+/* Firefox */
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+
 #main-navbar a.disabled {
     color: grey;
 }
