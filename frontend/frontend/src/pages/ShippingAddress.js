@@ -9,7 +9,8 @@ import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
 import Accordion from "react-bootstrap/Accordion";
 import AuthContext from "../context/AuthContext";
-
+import { config } from "../Constants";
+const url = config.url.API_URL;
 const ShippingAddress = () => {
     //const userRef = useRef();
     const navigate = useNavigate();
@@ -24,6 +25,10 @@ const ShippingAddress = () => {
     const [defaultShipping, setDefaultShipping] = useState(false);
     const [checkboxCheck, setCheckboxCheck] = useState(false);
     const [value, setValue] = useState(0);
+
+    const pythonAnywhereShippingURL =
+        "https://johng.pythonanywhere.com/shipping/";
+    const devShippingURL = "http://localhost:8000/shipping/";
 
     useEffect(() => {
         //userRef.current.focus();
@@ -57,10 +62,7 @@ const ShippingAddress = () => {
             },
             //credentials: "include",
         };
-        const response = await fetch(
-            "http://localhost:8000/shipping/",
-            requestOptions
-        );
+        const response = await fetch(`${url}/shipping/`, requestOptions);
         const data = await response.json();
         const s_address = data.filter((item) => item.address_type == "S");
         setShippingAddress(s_address);
@@ -113,10 +115,7 @@ const ShippingAddress = () => {
                 zipcode: zipcode,
             }),
         };
-        const response = await fetch(
-            "http://localhost:8000/shipping/",
-            requestOptions
-        );
+        const response = await fetch(`${url}/shipping/`, requestOptions);
         const data = await response.json();
         console.log("Shippping", data);
         //navigate("/ordered-items");
@@ -149,7 +148,7 @@ const ShippingAddress = () => {
             }),
         };
         const response = await fetch(
-            `http://localhost:8000/shipping/${value}/`,
+            `${url}/shipping/${value}/`,
             requestOptions
         );
         const data = await response.json();
@@ -159,8 +158,8 @@ const ShippingAddress = () => {
 
     return (
         <>
-            <Container>
-                <Row>
+            <Container className="mt-4">
+                <Row className="shipping-flex">
                     <Col>
                         <div>
                             <div>
@@ -195,7 +194,10 @@ const ShippingAddress = () => {
                                             </Row>
                                         </Card>
                                     ))}
-                                    <Button type="submit">
+                                    <Button
+                                        className="set-default-address-btn"
+                                        type="submit"
+                                    >
                                         Set default address
                                     </Button>
                                 </form>

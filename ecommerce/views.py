@@ -191,6 +191,38 @@ class ItemViewSet(viewsets.ModelViewSet):
     serializer_class = ItemSerializer
     permission_classes = (IsAuthenticated,)
 
+    def partial_update(self, request, pk):
+        queryset = self.queryset
+        single_item = queryset.get(id=pk)
+        print(f"single_item {single_item}")
+
+        data = request.data
+        print(f"data {data}")
+
+        stock_data = data['stock']
+        
+        #if stock_data > single_item.stock:
+        #    message = {'Message': f'Item has a stock limit of {single_item.stock}'}
+        #    return Response(message)
+        #else:
+
+        single_item.stock = stock_data
+        single_item.save()
+        message = {"Message": "Item"}
+        return Response(message)
+
+
+       
+
+
+
+       
+        
+
+
+
+   
+
 class OrderViewSet(viewsets.ModelViewSet):
     #authentication_classes = [SessionAuthentication]
     permission_classes = (IsAuthenticated,)
@@ -207,7 +239,7 @@ class OrderViewSet(viewsets.ModelViewSet):
     def partial_update(self, request, pk):
         # instance before update
         instance = self.get_queryset()
-        print(f"queryset {instance}")
+        #print(f"queryset {instance}")
         # read data from request
         self.request.data.get("ordered", None)
         payment_method_id = self.request.data.get('payment_method_id', None)
@@ -216,16 +248,16 @@ class OrderViewSet(viewsets.ModelViewSet):
         #print(f"updated data {updated_instance}")
 
         single_main_order = Order.objects.get(id=pk)
-        print(f"single main order {single_main_order}")
+        #print(f"single main order {single_main_order}")
 
         user_order_items = OrderItem.objects.filter(customer_id=self.request.user.id, ordered=False) 
-        print(f"user order items {user_order_items}")
+        #print(f"user order items {user_order_items}")
         
         address_shipping_qs = ShippingAddress.objects.get(customer_id=self.request.user.id, address_type='S', default=True)
-        print(f"shipping address {address_shipping_qs}")
+        #print(f"shipping address {address_shipping_qs}")
         
         address_billing_qs = ShippingAddress.objects.get(customer_id=self.request.user.id, address_type='B', default=True)
-        print(f"billing address {address_billing_qs}")
+        #print(f"billing address {address_billing_qs}")
         
         '''
         add stripe purchasing here
@@ -254,7 +286,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         single_main_order.ordered = True
         single_main_order.save()
 
-        print(f"user item id {user_order_items}")
+        #print(f"user item id {user_order_items}")
         user_order_items.update(ordered=True)
         for item in user_order_items:
             item.save()
@@ -282,32 +314,98 @@ class OrderItemViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         queryset = self.queryset
-        #order_item_id = request.user.data.get('item', None)
-        #item = Item.objects.get(id=order_item_id)
+        order_item_id = self.request.data.get('item_id', None)
+        order_item_quantity = self.request.data.get('quantity', None)
+        item = Item.objects.get(id=order_item_id)
+        print(f"item {item}")
 
-        # First save serializer, then can use serializer.data.get('id', None)
-        serializer.save(customer_id=self.request.user.id)
-        item_order_id = serializer.data.get('id', None)
-        print(f"Item order id {item_order_id}")
-        print(f"Serializer data {serializer.data}")
-        item_order_obj = queryset.get(id=item_order_id)
-        print(f"Item order obj {item_order_obj}")
-        order_qs = Order.objects.filter(customer_id=self.request.user.id, ordered=False)
-        print(f"order qs, {order_qs}")
-        if order_qs.exists():
-            order = order_qs[0]
-            print(f"order {order.items}")
-            order.items.add(item_order_obj)
+        filter_ordered_items_by_item = queryset.filter(customer_id=self.request.user.id, item=item, ordered=False)
+        print(f"filtered order items {filter_ordered_items_by_item}")
+
+        if filter_ordered_items_by_item.exists():
+            order_item = filter_ordered_items_by_item.first()
+            order_item.quantity += int(order_item_quantity)
+            order_item.save()
+
+            return Response({"Hello": "Hello there!!"})
+
         else:
-            ordered_date = timezone.now()
-            order = Order.objects.create(
-                customer_id=self.request.user.id, ordered_date=ordered_date
-            )
-            order.items.add(item_order_obj)
-        # print(f"Order {order.id}")
-        # If you want to set a list to m2m field write:
-        # order.items.set(item_order_obj)
-        # order.items.add(item_order_obj)
+
+            # First save serializer, then can use serializer.data.get('id', None)
+            serializer.save(customer_id=self.request.user.id)
+            item_order_id = serializer.data.get('id', None)
+            print(f"Item order id {item_order_id}")
+            print(f"Serializer data {serializer.data}")
+
+            item_in_item_order = serializer.data.get("item_detail", None)
+            print(f"item in item detail {item_in_item_order}")
+
+            item_order_obj = queryset.get(id=item_order_id)
+            print(f"Item order obj {item_order_obj}")
+            order_qs = Order.objects.filter(customer_id=self.request.user.id, ordered=False)
+            print(f"order qs, {order_qs}")
+       
+            if order_qs.exists():
+                order = order_qs[0]
+
+                order.items.add(item_order_obj)
+
+            else:
+                ordered_date = timezone.now()
+                order = Order.objects.create(
+                    customer_id=self.request.user.id, ordered_date=ordered_date
+                )
+                order.items.add(item_order_obj)
+
+        
+            for item in order_qs:
+                for singles in item.items.all():
+                    print(f" Singles {singles.id}")
+                    print(f"single order item id {singles.item.id}")
+            # print(f"Order {order.id}")
+            # If you want to set a list to m2m field write:
+            # order.items.set(item_order_obj)
+            # order.items.add(item_order_obj)
+        return Response({"Hello": "Hello there??"})
+
+    def perform_destroy(self, serializer):
+
+        queryset = self.queryset
+
+        order_qs = Order.objects.filter(customer_id=self.request.user.id, ordered=False)
+        print(f"order qs {order_qs}")
+        data = self.request.data
+        print(f"data {data}")
+
+        item_order_id= data['order_item_id']
+        print(f"item order id {item_order_id}")
+        item_order_obj = queryset.get(id=item_order_id)
+        print(f"item order obj {item_order_obj}")
+
+
+
+
+        order = order_qs[0]
+        
+        item_order_obj.delete()
+           
+        if not order.items.exists():
+            order.delete()
+            data = {'message': "Order has been deleted"}
+            return Response(data, status=200)
+        
+        data = {"message": "Order Item has been deleted."}
+        return Response(data, status=200)
+
+
+
+
+           
+       
+
+
+
+
     
     '''
     def post(request):
@@ -340,8 +438,9 @@ class ShippingAddressViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         queryset = self.queryset
-        order = Order.objects.get(customer_id=request.user.id, ordered=False)
-        print(f"Order {order}")
+        #order = Order.objects.get(customer_id=request.user.id, ordered=False)
+        #print(f"order {order}")
+        #print(f"Order {order}")
         user_shipping = request.data.get('shipping', None)
         user_billing = request.data.get('billing', None)
         user_default_shipping = request.data.get('user_default_shipping', None)
@@ -412,10 +511,10 @@ class ShippingAddressViewSet(viewsets.ModelViewSet):
 
                     billing_address.save()
                     
-                    order.shipping_address = shipping
-                    order.billing_address = billing_address 
+                    #order.shipping_address = shipping
+                    #order.billing_address = billing_address 
 
-                    order.save() 
+                    #order.save() 
 
                     return JsonResponse({"detail": "Created shipping address."})
 
@@ -428,8 +527,8 @@ class ShippingAddressViewSet(viewsets.ModelViewSet):
                 #billing_qs = ShippingAddress.objects.filter(customer_id=request.user.id, address_type='B', default=True)
                 if address_b_qs.exists():
                     billing_address = address_b_qs[0]
-                    order.billing_address = billing_address
-                    order.save()
+                    #order.billing_address = billing_address
+                    #order.save()
                 else:
                     return JsonResponse({'detail': 'No default billing address available.'})
             else:
@@ -450,7 +549,7 @@ class ShippingAddressViewSet(viewsets.ModelViewSet):
                             b_address.save()
                         billing_address.default = True
                         billing_address.save()
-                    order.save()
+                    #order.save()
 
 
                     return JsonResponse({'detail': 'Created billing address'})

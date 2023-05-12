@@ -13,59 +13,39 @@ import Card from "react-bootstrap/Card";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import InputGroup from "react-bootstrap/InputGroup";
+import Spinner from "react-bootstrap/Spinner";
 import SavedItem from "../components/SavedItem";
 import AuthContext from "../context/AuthContext";
+import { config } from "../Constants";
+
+const url = config.url.API_URL;
 
 const OrderItems = () => {
     const navigate = useNavigate();
-    const { accessToken } = useContext(AuthContext);
+    const { accessToken, deleteOrderItem, updateStockOnDelete } =
+        useContext(AuthContext);
     //const [csrftoken, setCsrftoken] = useState("");
     const [order, setOrder] = useState([]);
     const [customerInfo, setCustomerInfo] = useState([]);
-    const [items, setItems] = useState([]);
+    const [items, setItems] = useState(null);
+    const [sumOfItems, setSumOfItems] = useState(0);
+    const [shipping, setShipping] = useState(5.99);
     const [itemDetailList, setItemDetailList] = useState([]);
-    const [total, setTotal] = useState("");
+    //const [number, setNumber] = useState(1);
+    const [total, setTotal] = useState(0);
     const [shippingInfo, setShippingInfo] = useState([]);
     const [billingInfo, setBillingInfo] = useState([]);
     const [itemIdNum, setItemidNum] = useState([]);
     const [error, setError] = useState(null);
+    const [spinner, setSpinner] = useState(null);
+    const [changedItemId, setChangedItemId] = useState(null);
     const stripe = useStripe();
     const elements = useElements();
 
     useEffect(() => {
         getOrderedItems();
         getShipping();
-        //getCards();
-        //getCSRFToken();
     }, []);
-
-    /*
-    const getCSRFToken = () => {
-        fetch("http://localhost:8000/csrf", {
-            credentials: "include",
-        })
-            .then((res) => {
-                let csrfToken = res.headers.get("X-CSRFToken");
-                console.log("csrf", csrfToken);
-                setCsrftoken(csrfToken);
-            })
-            .catch((error) => {
-                console.log(error);
-            });
-    };
-    */
-
-    const getCards = async () => {
-        const response = await fetch("http://localhost:8000/cards", {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${accessToken}`,
-            },
-        });
-        const data = await response.json();
-        console.log("cards", data);
-    };
 
     const getShipping = async () => {
         const requestOptions = {
@@ -74,12 +54,8 @@ const OrderItems = () => {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${accessToken}`,
             },
-            //credentials: "include",
         };
-        const response = await fetch(
-            "http://localhost:8000/shipping/",
-            requestOptions
-        );
+        const response = await fetch(`${url}/shipping/`, requestOptions);
         const data = await response.json();
         const shipping_address = data.filter(
             (item) => item.address_type == "S" && item.default == true
@@ -89,176 +65,207 @@ const OrderItems = () => {
         );
         setShippingInfo(shipping_address);
         setBillingInfo(billing_address);
-        console.log("Shipping data", data);
     };
 
     const getOrderedItems = async () => {
+        setSpinner(true);
         const requestOptions = {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${accessToken}`,
             },
-            //credentials: "include",
         };
-        const response = await fetch(
-            "http://localhost:8000/order/",
-            requestOptions
-        );
+        const response = await fetch(`${url}/order/`, requestOptions);
         const data = await response.json();
-        console.log("Data", data);
+        console.log("data", data);
+        const dataItems = data.order_items;
+
         setOrder(data);
         const allOrderedItems = data.map((item) => setItems(item.order_items));
-        //const allOrderedItems = data.map((item) => item.order_items);
-        const singleOrderItems = items.map((item) => item.item_detail);
+        //const singleOrderItems = data.map((item) =>
+        //    setItemDetailList(item.order_items.item_detail)
+        //);
+
         const allTotal = data.map((item) => setTotal(item.get_total));
         const info = data.map((customer) => customer.get_address);
-        //const idNum = data.map((num) => )
+        if (items != null) {
+            const numItems = items.map((item) => item.quantity);
+            const sum = numItems.reduce((a, b) => a + b, 0);
+            setSumOfItems(sum);
+        }
+        //console.log("numItems", numItems);
+        //setNumberOfItems(getNumItems);
         setCustomerInfo(info);
-        setItemDetailList(singleOrderItems);
+
+        setTimeout(() => {
+            setSpinner(false);
+        }, 2000);
     };
-    console.log("Order", order);
 
-    console.log("item orders", items);
-    console.log("Single order items", itemDetailList);
+    console.log("items", items);
+    //console.log("q items", numberOfItems);
 
-    const handleDelete = async (e, id, itemId) => {
-        e.preventDefault();
-        const requestOptions = {
-            method: "DELETE",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${accessToken}`,
-                //"X-CSRFToken": csrftoken,
-            },
-            //credentials: "include",
-        };
-        const response = await fetch(
-            `http://localhost:8000/order-item/${id}/`,
-            requestOptions
+    //const getNumItems = items.map((item) => item.quantity);
+    //console.log("num of items", getNumItems);
+    /*
+    const getSum = () => {
+        const numItems = items.map((item) => item.quantity);
+        console.log("numItems", numItems);
+        const sum = numItems.reduce((a, b) => a + b, 0);
+        console.log("sum", sum);
+    };
+
+    if (items != null) {
+        getSum();
+        console.log("getSum", getSum());
+    }
+    */
+
+    const handleDelete = (e, orderId, itemId) => {
+        const singleOrderItems = items.map((item) => item.item_detail);
+        updateStockOnDelete(orderId, itemId, singleOrderItems, items);
+        deleteOrderItem(e, orderId);
+        removeItem(orderId);
+    };
+
+    const removeItem = async (id) => {
+        const newList = items.filter((item) => item.id !== id);
+        setItems(newList);
+    };
+
+    const updateItemAPIs = (ids) => {
+        ids.forEach((id) => {
+            const itemId = items.find((item) => item.id === id);
+            const originalItemId = itemId.item_detail.id;
+            const stockNum = itemId.item_detail.sold;
+            const itemQuantity = itemId.quantity;
+            const response = fetch(`${url}/items/${originalItemId}/`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${accessToken}`,
+                },
+                body: JSON.stringify({
+                    sold: stockNum + itemQuantity,
+                }),
+            });
+        });
+    };
+
+    /*
+    function handleQuantityChange(itemId, newQuantity) {
+        setItems(
+            items.map((item) => {
+                if (item.id === itemId) {
+                    const prevQuantity = item.quantity;
+                    const newStock =
+                        item.item_detail.stock + (prevQuantity - newQuantity);
+                    setChangedItemId(itemId);
+                    return {
+                        ...item,
+                        quantity: newQuantity,
+                        item_detail: { ...item.item_detail, stock: newStock },
+                    };
+                } else {
+                    return item;
+                }
+            })
         );
-        // removeItem(id);
-        updateStockOnDelete(itemId, id);
-        getOrderedItems();
+    }
+    */
+
+    function handleQuantityChange(itemId, newQuantity) {
+        const updatedItems = items.map((item) => {
+            console.log("item dot id", item.id);
+            console.log("itemId", itemId);
+            if (item.id === itemId) {
+                const prevQuantity = Number(item.quantity);
+                console.log("item stock", item.item_detail.stock);
+                console.log("prev quantity", prevQuantity);
+                console.log("new quantity", newQuantity);
+                console.log(
+                    "sum",
+                    item.item_detail.stock +
+                        (prevQuantity - Number(newQuantity))
+                );
+                const newStock =
+                    item.item_detail.stock +
+                    (prevQuantity - Number(newQuantity));
+                console.log("newStock", newStock);
+                return {
+                    ...item,
+                    quantity: Number(newQuantity),
+                    item_detail: { ...item.item_detail, stock: newStock },
+                };
+            } else {
+                return item;
+            }
+        });
+        setChangedItemId(itemId);
+        setItems(updatedItems);
+    }
+
+    const handleSubmit = async (e, orderId) => {
+        e.preventDefault();
+        const singleOrder = items.find((item) => item.id === changedItemId);
+        updateItem(singleOrder);
+        console.log("single order", singleOrder);
+        if (singleOrder.item_detail.stock >= 0) {
+            const singleItem = singleOrder.item_detail;
+            console.log("single item", singleItem);
+            const requestOptions = {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${accessToken}`,
+                    //"X-CSRFToken": csrftoken,
+                },
+                //credentials: "include",
+                body: JSON.stringify({
+                    quantity: Number(singleOrder.quantity),
+                    item: singleOrder.item_detail.url,
+                }),
+            };
+            const response = await fetch(
+                `${url}/order-item/${singleOrder.id}/`,
+                requestOptions
+            );
+            const data = await response.json();
+            console.log("handle submitted data", data);
+            //setOrderCreated(data);
+            //if (!data.detail) {
+            getOrderedItems();
+            //getShipping();
+            //navigate("/order-item/");
+            //}
+        } else {
+            throw new Error(
+                "Item's stock limit is " + singleOrder.item_detail.stock + "."
+            );
+        }
     };
-
-    //const removeItem = async (id) => {
-    //    const newList = items.filter((item) => item.id !== id);
-    //    setItems(newList);
-    //};
-
-    const updateStockOnDelete = async (id, orderId) => {
-        const orderItemId = items.find((item) => item.id === orderId);
-        const stockValue = orderItemId.item_detail.stock;
-
-        console.log("Single Item", stockValue);
-        console.log("quantity", orderItemId);
-
+    const updateItem = async (order) => {
         const requestOptions = {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${accessToken}`,
-                //"X-CSRFToken": csrftoken,
             },
-            //credentials: "include",
             body: JSON.stringify({
-                stock: stockValue + orderItemId.quantity,
+                stock: Number(order.item_detail.stock),
             }),
         };
         const response = await fetch(
-            `http://localhost:8000/items/${id}/`,
+            `${url}/items/${order.item_detail.id}/`,
             requestOptions
         );
         const data = await response.json();
-        console.log("update data", data);
-        getOrderedItems();
     };
-    //u/Fine_Bench9084
-
-    // Function update with array of numbers
-    //const updateAPIs = async (ids) => {
-
-    //    ids.forEach(id => {
-    //        const itemId = items.find((item) => item.id === id);
-    //        const stockNum = itemId.item_detail.sold;
-    //        const itemQuantity = itemId.quantity;
-    //        const response = await fetch(`http://localhost:8000/items/${id}`,
-    //            method: "PUT",
-    //            headers: {
-    //                "Content-Type": "application/json",
-    //                "X-CSRFToken": csrftoken,
-    //            },
-    //            credentials: "include",
-    //            body: JSON.stringify({
-    //                sold: stockNum + itemQuantity,
-    //            }),
-    //        const data = await response.json();
-    //        console.log("Multiple item data", data)
-    //    }))
-    //}
-
-    const updateItemAPIs = (ids) => {
-        ids.forEach((id) => {
-            console.log("IDS", ids);
-            const itemId = items.find((item) => item.id === id);
-            console.log("Item id", itemId);
-            const originalItemId = itemId.item_detail.id;
-            const stockNum = itemId.item_detail.sold;
-            console.log("Stock num", stockNum);
-            const itemQuantity = itemId.quantity;
-            console.log("Item quantity", itemQuantity);
-            const response = fetch(
-                `http://localhost:8000/items/${originalItemId}/`,
-                {
-                    method: "PUT",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${accessToken}`,
-                        //"X-CSRFToken": csrftoken,
-                    },
-                    //credentials: "include",
-                    body: JSON.stringify({
-                        sold: stockNum + itemQuantity,
-                    }),
-                }
-            );
-            //const data = response.json();
-            //console.log("Multi item update with order confirmation.", data);
-        });
-    };
-
-    //const updateStockOnOrder = async (id, orderId) => {
-    //    const orderItemId = items.find((item) => item.id === orderId);
-    //    //console.log("Order item id", orderItemId);
-    //    const soldValue = orderItemId.item_detail.sold;
-    //    console.log("sold value", soldValue);
-    //    const requestOptions = {
-    //        method: "PUT",
-    //        headers: {
-    //            "Content-Type": "application/json",
-    //            "X-CSRFToken": csrftoken,
-    //        },
-    //        credentials: "include",
-    //        body: JSON.stringify({
-    //            sold: soldValue + orderItemId,
-    //        }),
-    //    };
-    //    const response = await fetch(
-    //        `http://localhost:8000/items/${id}`,
-    //        requestOptions
-    //    );
-    //    const data = await response.json();
-    //    console.log("Updated sold number", data);
-    //};
-
-    console.log("Customer INfo", customerInfo);
-    console.log("order", order);
 
     const updateOrder = async (e) => {
         e.preventDefault();
         const itemIds = items.map((item) => item.id);
-        console.log("Item id array", itemIds);
         const orderId = order.map((num) => num.id);
         const date = new Date();
 
@@ -269,15 +276,12 @@ const OrderItems = () => {
             card: card,
         });
 
-        console.log("order id", orderId);
         const requestOptions = {
             method: "PATCH",
             headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${accessToken}`,
-                //"X-CSRFToken": csrftoken,
             },
-            //credentials: "include",
             body: JSON.stringify({
                 ordered: true,
                 ordered_date: date,
@@ -285,11 +289,10 @@ const OrderItems = () => {
             }),
         };
         const response = await fetch(
-            `http://localhost:8000/order/${orderId}/`,
+            `${url}/order/${orderId}/`,
             requestOptions
         );
         const data = await response.json();
-        console.log("Updated data", data);
         updateItemAPIs(itemIds);
         setItems("");
         navigate("/order-placed/");
@@ -322,175 +325,238 @@ const OrderItems = () => {
         },
     };
 
+    const convertTotalToNum = parseFloat(total);
+
+    const totalSum = convertTotalToNum + shipping;
+    //console.log("totalSum", totalSum);
+    //console.log("total", convertTotalToNum);
+    //console.log("shipping", shipping);
+
+    const caTaxRateSum = (7.25 / 100) * totalSum;
+    //console.log("tax rate", caTaxRateSum);
+
+    const fullTotalSum = totalSum + caTaxRateSum;
+    //console.log("full sum", fullTotalSum);
+
+    // Order items
+
     return (
-        <Container>
-            <div className="mt-5 mb-3 d-flex gap-3 justify-content-evenly align-items-baseline">
-                <div>
-                    <Row className="mb-3">
-                        <Col>
-                            <h3>Shipping address</h3>
-                        </Col>
-                        <Col>
-                            {shippingInfo.map((info) => (
-                                <div key={info.id}>
-                                    <div>
-                                        <p>
-                                            {info.address}, {info.apt},{" "}
-                                            {info.city}, {info.state},{" "}
-                                            {info.zipcode}
-                                        </p>
-                                    </div>
-                                </div>
-                            ))}
-                        </Col>
-                        <Col>
-                            {" "}
-                            <Link to={"/shipping/"}>
-                                {shippingInfo.length > 0 ? (
-                                    <p>Change</p>
-                                ) : (
-                                    <p>Add a shipping address.</p>
-                                )}
-                            </Link>
-                        </Col>
-                    </Row>
-                    <hr />
-                    {items.length > 0 ? (
-                        <>
-                            <h4 className="mb-3">Review Items</h4>
-                            {items.map((item) => (
-                                <Card className="mb-2" key={item.id}>
-                                    <Row>
-                                        <Col>
-                                            <div>
-                                                <Card.Img
-                                                    src={item.item_detail.image}
-                                                    style={{ width: "200px" }}
-                                                />
+        <Container className="mt-4 mb-5">
+            {spinner ? (
+                <>
+                    <Spinner></Spinner>
+                </>
+            ) : (
+                <>
+                    {items === null ? (
+                        <></>
+                    ) : items.length >= 1 ? (
+                        <div className="mt-5 mb-3 d-flex gap-3 justify-content-evenly align-items-baseline main-place-order-div">
+                            <div className="main-ordered-items-div">
+                                <Row className="mb-3 d-flex order-shipping-row">
+                                    <Col>
+                                        <h3>Shipping address</h3>
+                                    </Col>
+                                    <Col>
+                                        {shippingInfo.map((info) => (
+                                            <div key={info.id}>
+                                                <div>
+                                                    <p>
+                                                        {info.address},{" "}
+                                                        {info.apt}, {info.city},{" "}
+                                                        {info.state},{" "}
+                                                        {info.zipcode}
+                                                    </p>
+                                                </div>
                                             </div>
-                                        </Col>
-                                        <Col className="mid-col-checkout">
-                                            <p>{item.item_detail.name}</p>
-                                            <p>
-                                                {item.item_detail.description}
-                                            </p>{" "}
-                                            <Form>
-                                                <InputGroup>
-                                                    <Form.Control
-                                                        type="number"
-                                                        id="number2"
-                                                        min={1}
-                                                        max={item.quantity}
-                                                        value={item.quantity}
-                                                    />
-                                                    <InputGroup.Text>
-                                                        Qty.
-                                                    </InputGroup.Text>
-                                                </InputGroup>
-                                            </Form>
-                                        </Col>
-                                        <Col>
-                                            <div>
-                                                <form>
-                                                    <button
-                                                        onClick={(e) =>
-                                                            handleDelete(
+                                        ))}
+                                    </Col>
+                                    <Col>
+                                        {" "}
+                                        <Link to={"/shipping/"}>
+                                            {shippingInfo.length > 0 ? (
+                                                <p>Change</p>
+                                            ) : (
+                                                <p>Add a shipping address.</p>
+                                            )}
+                                        </Link>
+                                    </Col>
+                                </Row>
+                                <hr />
+
+                                <h4 className="mb-3">Review Items</h4>
+                                {items.map((item) => (
+                                    <div key={item.id}>
+                                        <Card className="mb-2" key={item.id}>
+                                            <Row className="purchase-item-info">
+                                                <Col>
+                                                    <div>
+                                                        <Card.Img
+                                                            src={
+                                                                item.item_detail
+                                                                    .image
+                                                            }
+                                                            style={{
+                                                                width: "200px",
+                                                            }}
+                                                        />
+                                                    </div>
+                                                </Col>
+                                                <Col className="mid-col-checkout">
+                                                    <p>
+                                                        {item.item_detail.name}
+                                                    </p>
+                                                    <p>
+                                                        {
+                                                            item.item_detail
+                                                                .description
+                                                        }
+                                                    </p>
+                                                    <p>
+                                                        {item.item_detail.stock}
+                                                    </p>
+                                                    <Form
+                                                        onSubmit={(e) =>
+                                                            handleSubmit(
                                                                 e,
-                                                                item.id,
                                                                 item.item_detail
                                                                     .id
                                                             )
                                                         }
                                                     >
-                                                        Delete
-                                                    </button>
-                                                    <p>
-                                                        Order item id: {item.id}
-                                                    </p>
-                                                    <p>
-                                                        item number:{" "}
-                                                        {item.item_detail.id}
-                                                    </p>
-                                                </form>
-                                            </div>
-                                        </Col>
-                                    </Row>
-                                </Card>
-                            ))}{" "}
-                        </>
-                    ) : (
-                        <p>No items to order.</p>
-                    )}
-                </div>
-                <Card className="payment-div">
-                    <div className="order-sum-content">
-                        <h3>Order Summary</h3>
-                        <p className="order-sum-p">Items</p>
-                        <p className="order-sum-p">Shipping and Handling</p>
-                        <p className="order-sum-p">Total before tax:</p>
-                        <p className="order-sum-p">
-                            Estimated tax to be collected:
-                        </p>
-                    </div>
-                    <hr />
-                    <div className="order-sum-content">
-                        <h5>Order total: {total}</h5>
-                    </div>
-                    <hr />
-                    <Form onSubmit={updateOrder}>
-                        <div className="form-row">
-                            <label htmlFor="card-element">
-                                Credit or debit card
-                            </label>
-                            <CardElement
-                                id="card-element"
-                                onChange={handleChange}
-                                options={{
-                                    style: {
-                                        base: inputStyle,
-                                    },
-                                }}
-                            />
-                            <div className="card-error" role="alert">
-                                {error}
-                            </div>
-                        </div>
-                        <Button variant="success" type="submit">
-                            Place Order
-                        </Button>
-                    </Form>
-                    {/*<form>
-                        <PaymentElement />
-                    </form>*/}
-                </Card>
-            </div>
-
-            {/*
-            {customerInfo.map((u_address) => (
-                <div key={u_address.id}>
-                    <p>{u_address.address}</p>
-                </div>
-            ))}
-            */}
-
-            {/*
-                    <Link to={"/billing/"}>
-                        <div>
-                            {billingInfo.map((info) => (
-                                <div key={info.id}>
-                                    <div className="ship-info-div">
-                                        <p>Billing address.</p>
-                                        <p>
-                                            {info.address}, {info.apt},{" "}
-                                            {info.city}, {info.state},{" "}
-                                            {info.zipcode}
-                                        </p>
+                                                        <div className="qty-btn-group">
+                                                            <InputGroup className="item-purchase-input">
+                                                                <Form.Control
+                                                                    type="number"
+                                                                    id="number2"
+                                                                    min={1}
+                                                                    value={
+                                                                        item.quantity
+                                                                    }
+                                                                    max={
+                                                                        item
+                                                                            .item_detail
+                                                                            .stock_limit
+                                                                    }
+                                                                    onChange={(
+                                                                        e
+                                                                    ) =>
+                                                                        handleQuantityChange(
+                                                                            item.id,
+                                                                            e
+                                                                                .target
+                                                                                .value
+                                                                        )
+                                                                    }
+                                                                />
+                                                                <InputGroup.Text>
+                                                                    Qty.
+                                                                </InputGroup.Text>
+                                                            </InputGroup>{" "}
+                                                            <div>
+                                                                <Form>
+                                                                    <Button
+                                                                        style={{
+                                                                            width: "95%",
+                                                                        }}
+                                                                        variant="danger"
+                                                                        onClick={(
+                                                                            e
+                                                                        ) =>
+                                                                            handleDelete(
+                                                                                e,
+                                                                                item.id,
+                                                                                item
+                                                                                    .item_detail
+                                                                                    .id
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        Delete
+                                                                    </Button>
+                                                                </Form>
+                                                            </div>{" "}
+                                                            <div>
+                                                                <Button
+                                                                    style={{
+                                                                        width: "95%",
+                                                                    }}
+                                                                    type="submit"
+                                                                >
+                                                                    Update
+                                                                </Button>
+                                                            </div>
+                                                        </div>
+                                                    </Form>{" "}
+                                                </Col>
+                                            </Row>
+                                        </Card>
                                     </div>
+                                ))}
+                            </div>
+                            <Card className="payment-div">
+                                <div className="order-sum-content">
+                                    <h3>Order Summary</h3>
+                                    <p className="order-sum-p">
+                                        Items Total {total}
+                                    </p>
+                                    <p className="order-sum-p">
+                                        Shipping and Handling ${shipping}
+                                    </p>
+                                    <p className="order-sum-p">
+                                        Total before tax: {totalSum.toFixed(2)}
+                                    </p>
+                                    <p className="order-sum-p">
+                                        Estimated tax to be collected:{" "}
+                                        {caTaxRateSum.toFixed(2)}
+                                    </p>
                                 </div>
-                            ))}
+                                <hr />
+                                <div className="order-sum-content">
+                                    <h5>
+                                        Order total: {fullTotalSum.toFixed(2)}
+                                    </h5>
+                                </div>
+                                <hr />
+                                <Form onSubmit={updateOrder}>
+                                    <div className="form-row">
+                                        <label htmlFor="card-element">
+                                            Credit or debit card
+                                        </label>
+                                        <CardElement
+                                            id="card-element"
+                                            onChange={handleChange}
+                                        />
+                                        <div
+                                            className="card-error"
+                                            role="alert"
+                                        >
+                                            {error}
+                                        </div>
+                                    </div>
+                                    <Button
+                                        className="p-checkout-btn"
+                                        variant="success"
+                                        type="submit"
+                                    >
+                                        Place Order
+                                    </Button>
+                                </Form>
+                            </Card>
                         </div>
-                    </Link>
-                    */}
+                    ) : (
+                        <div className="no-items-cart">
+                            <h2>No items to order.</h2>
+
+                            <Link to="/">
+                                <Button className="mb-5" variant="info">
+                                    Add some items.
+                                </Button>
+                            </Link>
+                        </div>
+                    )}
+                </>
+            )}
         </Container>
     );
 };

@@ -44,7 +44,7 @@ class GroupSerializer(serializers.HyperlinkedModelSerializer):
 class ItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
-        fields = ['id', 'url', 'name', 'image', 'price', 'description', 'stock', 'sold', 'created']
+        fields = ['id', 'url', 'name', 'image', 'price', 'description', 'stock', 'stock_limit', 'sold', 'created']
         read_only_fields = ('image', 'name',)
 
 class OrderItemSerializer(serializers.HyperlinkedModelSerializer):

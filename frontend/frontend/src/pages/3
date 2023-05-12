@@ -102,7 +102,7 @@ export const AuthProvider = ({ children }) => {
             setRefreshToken(data.refresh);
             localStorage.setItem("refresh", JSON.stringify(data.refresh));
             setUser(jwt_decode(data.access));
-            navigate("/");
+            navigate("/home");
         } else {
             alert("Something went wrong");
         }
@@ -185,42 +185,35 @@ export const AuthProvider = ({ children }) => {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${accessToken}`,
             },
-            body: JSON.stringify({ order_item_id: orderId }),
         };
         const response = await fetch(
             `${url}/order-item/${orderId}/`,
             requestOptions
         );
-        if (response.body && response.body.locked) {
-            console.log("Order Item has been deleted.");
-        }
+        const data = await response.json();
     };
 
     const updateStockOnDelete = async (
         orderId,
         itemId,
         itemDetailList,
+        numberForDelete,
         items
     ) => {
         const orderItemId = items.find((item) => item.id === orderId);
         const singleItem = itemDetailList.find((x) => x.id === itemId);
 
         const requestOptions = {
-            method: "PATCH",
+            method: "PUT",
             headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${accessToken}`,
             },
             body: JSON.stringify({
-                stock:
-                    Number(orderItemId.item_detail.stock) +
-                    Number(orderItemId.quantity),
+                stock: singleItem.stock + numberForDelete,
             }),
         };
         const response = await fetch(`${url}/items/${itemId}/`, requestOptions);
-
-        const data = await response.json();
-        console.log("Item data", data);
         //removeOrderItem(id, items, orderId);
     };
 

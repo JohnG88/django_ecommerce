@@ -7,9 +7,15 @@ import Row from "react-bootstrap/Row";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import Badge from "react-bootstrap/Badge";
+import Spinner from "react-bootstrap/Spinner";
 import AuthContext from "../context/AuthContext";
 import ItemList from "../components/ItemList";
 import InputGroup from "react-bootstrap/InputGroup";
+
+import { config } from "../Constants";
+
+const url = config.url.API_URL;
+
 const RefundItem = () => {
     const { accessToken } = useContext(AuthContext);
     const [orderItem, setOrderItem] = useState([]);
@@ -18,11 +24,15 @@ const RefundItem = () => {
     const [itemQuantityNumber, setItemQuantityNumber] = useState(0);
     const [itemQuantReturnNum, setItemQuantReturnNum] = useState(0);
     const [valueInput, setValueInput] = useState(0);
-
+    const [spinner, setSpinner] = useState(null);
     const navigate = useNavigate();
     const params = useParams();
     const itemId = params.orderItemId;
     //const [numberReturn, setNumberReturn] = useState(0)
+
+    const pythonAnywhereRefundItemURL =
+        "https://johng.pythonanywhere.com/refund-item/";
+    const devRefundItemURL = "http://localhost:8000/refund-item/";
 
     useEffect(() => {
         if (
@@ -34,16 +44,14 @@ const RefundItem = () => {
     }, [itemQuantityNumber, itemQuantReturnNum]);
 
     const getOrderItem = async () => {
-        const response = await fetch(
-            `http://localhost:8000/refund-item/${itemId}/`,
-            {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${accessToken}`,
-                },
-            }
-        );
+        setSpinner(true);
+        const response = await fetch(`${url}/refund-item/${itemId}/`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${accessToken}`,
+            },
+        });
         const data = await response.json();
         setOrderItem(data);
         console.log("Order item", data);
@@ -53,6 +61,9 @@ const RefundItem = () => {
         setValueInput(orderItem.quantity - orderItem.quantity_returned);
         setItemQuantityNumber(data.quantity);
         setItemQuantReturnNum(data.quantity_returned);
+        setTimeout(() => {
+            setSpinner(false);
+        }, 1000);
     };
 
     console.log("set quant num", itemQuantityNumber);
@@ -71,21 +82,18 @@ const RefundItem = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const response = await fetch(
-            `http://localhost:8000/refund-item/${itemId}/`,
-            {
-                method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${accessToken}`,
-                },
-                body: JSON.stringify({
-                    refunded: true,
-                    number: number,
-                    quantity_returned: number,
-                }),
-            }
-        );
+        const response = await fetch(`${url}/refund-item/${itemId}/`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify({
+                refunded: true,
+                number: number,
+                quantity_returned: number,
+            }),
+        });
 
         const data = await response.json();
         console.log("refunded data", data);
@@ -97,9 +105,17 @@ const RefundItem = () => {
     //const itemQuantityNumber =
 
     return (
-        <>
-            <Container>
-                {/*
+        <Container className="mt-4 main-refund-div">
+            {spinner === null ? (
+                <></>
+            ) : spinner ? (
+                <>
+                    <Spinner></Spinner>
+                </>
+            ) : (
+                <>
+                    <Container className="d-flex refund-item-container">
+                        {/*
                 {" "}
                 <Col>
                     <h4>Are you sure you wish to refund the item(s)</h4>
@@ -154,58 +170,64 @@ const RefundItem = () => {
                 </Card>
                 */}
 
-                <div className="d-flex justify-content-evenly div-single-refund-info mt-5">
-                    <Card className="card-single-refund-info">
-                        <div className="d-flex">
-                            <Col>
-                                {" "}
-                                <Card.Img
-                                    src={item.image}
-                                    className="refund-image-item"
-                                />
-                            </Col>
-                            <Col>
-                                <div>
-                                    <p>{item.description}</p>
-                                    <p>{item.price}</p>
+                        <div className="d-flex justify-content-around main-refund-item-div mt-5">
+                            <Card>
+                                <div className="d-flex justify-content-even align-items-center refund-div-flex">
+                                    <div className="refund-item-img-col">
+                                        <Card.Img
+                                            src={item.image}
+                                            className="refund-image-item"
+                                        />
+                                    </div>
+                                    <div>
+                                        <div>
+                                            <p>{item.description}</p>
+                                            <p>{item.price}</p>
+                                        </div>
+                                    </div>
+                                    <div className="input-refund-div">
+                                        <p>
+                                            {initialNumber} items available for
+                                            return.
+                                        </p>
+                                        <InputGroup className="refund-item-qi mb-2">
+                                            <Form.Control
+                                                type="number"
+                                                id="number1"
+                                                min={0}
+                                                onChange={(e) =>
+                                                    setNumber(e.target.value)
+                                                }
+                                                value={number}
+                                                max={valueInput || 0}
+                                            />
+                                            <InputGroup.Text>
+                                                Qty.
+                                            </InputGroup.Text>
+                                        </InputGroup>
+                                    </div>
                                 </div>
-                            </Col>
-                            <Col className="input-refund-div">
-                                <p>
-                                    {initialNumber} items available for return.
-                                </p>
-                                <InputGroup className="refund-item-qi mb-2">
-                                    <Form.Control
-                                        type="number"
-                                        id="number1"
-                                        min={0}
-                                        onChange={(e) =>
-                                            setNumber(e.target.value)
-                                        }
-                                        value={number}
-                                        max={valueInput || 0}
-                                    />
-                                    <InputGroup.Text>Qty.</InputGroup.Text>
-                                </InputGroup>
-                            </Col>
-                        </div>
-                    </Card>
-                    <Card className="d-flex justify-content-center align-items-center refund-btn-div">
-                        <Container>
-                            {" "}
-                            {orderItem.refunded ? (
-                                <div>
-                                    <h4>
-                                        <Badge bg="success">
-                                            Item already refunded
-                                        </Badge>
-                                    </h4>
-                                </div>
-                            ) : (
-                                <div>
-                                    <div>{totalNumber.toFixed(2)}</div>
-                                    <Form onSubmit={(e) => handleSubmit(e)}>
-                                        {/*}
+                            </Card>
+                            <Card className="d-flex justify-content-center align-items-center refund-btn-div">
+                                <Container className="refund-item-btn-container">
+                                    {" "}
+                                    {orderItem.refunded ? (
+                                        <div>
+                                            <h4>
+                                                <Badge bg="success">
+                                                    Order Fully Refunded
+                                                </Badge>
+                                            </h4>
+                                        </div>
+                                    ) : (
+                                        <div>
+                                            <div>{totalNumber.toFixed(2)}</div>
+                                            <Form
+                                                onSubmit={(e) =>
+                                                    handleSubmit(e)
+                                                }
+                                            >
+                                                {/*}
                                         <InputGroup className="refund-item-qi mb-2">
                                             <Form.Control
                                                 type="number"
@@ -223,18 +245,23 @@ const RefundItem = () => {
                                         </InputGroup>{" "}
                                         */}
 
-                                        <Button variant="primary" type="submit">
-                                            {" "}
-                                            Refund
-                                        </Button>
-                                    </Form>
-                                </div>
-                            )}
-                        </Container>
-                    </Card>
-                </div>
-            </Container>
-        </>
+                                                <Button
+                                                    variant="primary"
+                                                    type="submit"
+                                                >
+                                                    {" "}
+                                                    Refund
+                                                </Button>
+                                            </Form>
+                                        </div>
+                                    )}
+                                </Container>
+                            </Card>
+                        </div>
+                    </Container>
+                </>
+            )}
+        </Container>
     );
 };
 

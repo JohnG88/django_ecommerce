@@ -16,7 +16,7 @@ router.register(r'refund-item', RefundItemOrderViewset)
 urlpatterns = [
     path('', include(router.urls)),
     path('register', RegisterAPIView.as_view(), name='register'),
-    path('cards', CardView.as_view(), name='cards'),
+    #path('cards', CardView.as_view(), name='cards'),
 
     #path('csrf', get_csrf, name='api-csrf'),
     #path('login', LoginAPIView.as_view(), name='api-login'),

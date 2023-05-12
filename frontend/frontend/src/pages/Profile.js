@@ -5,6 +5,7 @@ import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 import Container from "react-bootstrap/Container";
 import Table from "react-bootstrap/Table";
+
 const Profile = () => {
     //const { user, accessToken } = useContext(AuthContext);
     const {
@@ -55,7 +56,7 @@ const Profile = () => {
     */
 
     return (
-        <>
+        <Container className="mt-4">
             <Row>
                 <Col>
                     <h1>No</h1>
@@ -65,8 +66,22 @@ const Profile = () => {
                         width="150px"
                         height="150px"
                     />
+                    <div className="mt-1">
+                        <label htmlFor="avatar-file" className="pointer-label">
+                            Customize Avatar
+                        </label>
+                    </div>
+
                     <div>
-                        <label htmlFor="avatar-file">Custom avatar file</label>
+                        <label
+                            className="pointer-label"
+                            onClick={(e) => {
+                                deleteAvatar();
+                                handleRef();
+                            }}
+                        >
+                            Set Avatar to default
+                        </label>
                     </div>
                     <div>
                         <input
@@ -76,16 +91,6 @@ const Profile = () => {
                             ref={ref}
                             onChange={changeAvatar}
                         />
-                    </div>
-                    <div>
-                        <button
-                            onClick={(e) => {
-                                deleteAvatar();
-                                handleRef();
-                            }}
-                        >
-                            Delete Avatar
-                        </button>
                     </div>
                 </Col>
                 <Col>
@@ -103,10 +108,22 @@ const Profile = () => {
                     </Table>
                 </Col>
                 <Col>
-                    <Link to="/shipping">Addresses</Link>
+                    <Row>
+                        <Link
+                            className="remove-link-decorations"
+                            to="/shipping"
+                        >
+                            Shipping Address
+                        </Link>
+                    </Row>
+                    <Row>
+                        <Link className="remove-link-decorations" to="/billing">
+                            Billing Address
+                        </Link>
+                    </Row>
                 </Col>
             </Row>
-        </>
+        </Container>
     );
 };
 

@@ -9,14 +9,15 @@ const Login = () => {
     const [user, setUser] = useState("");
     const [password, setPassword] = useState("");
     const [userData, setUserData] = useContext(UserContext);
-
+    const devURL = "http://localhost:8000/csrf";
+    const pyAnywhereUEL = "http://johng.pythonanywhere.com/csrf";
     useEffect(() => {
         userRef.current.focus();
         getCSRFToken();
     }, []);
 
     const getCSRFToken = () => {
-        fetch("http://localhost:8000/csrf", {
+        fetch(pythonAnywhereURL, {
             credentials: "include",
             // withCredentials: true,
         })

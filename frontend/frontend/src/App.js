@@ -17,7 +17,7 @@ import Refund from "./pages/Refund";
 import RefundItem from "./pages/RefundItem";
 import RefundConfirm from "./pages/RefundConfirm";
 
-import Navbar from "./components/Navbar";
+import MainNavbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import { AuthProvider } from "./context/AuthContext";
 import PrivateRoute from "./utils/PrivateRoute";
@@ -34,15 +34,15 @@ const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_API_KEY);
 function App() {
     return (
         <Elements stripe={stripePromise}>
-            <div className="App">
+            <div className="App main-app-div">
                 <BrowserRouter>
                     <AuthProvider>
-                        <Navbar />
+                        <MainNavbar />
                         <Routes>
                             {/*<Route path="/" element={<App />}>*/}
                             <Route path="login" element={<LoginA />} />
                             <Route path="register" element={<Register />} />
-                            <Route path="home" element={<HomePage />} />
+                            <Route path="/" element={<HomePage />} />
 
                             <Route path="/" element={<PrivateRoute />}>
                                 <Route

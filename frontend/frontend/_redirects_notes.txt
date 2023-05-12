@@ -1,0 +1,2 @@
+- add the _redirects file in public folder when using react router dom in netlify
+- it lets you reload the page without giving errors.

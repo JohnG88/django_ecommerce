@@ -2,19 +2,27 @@ import React, { useState, useEffect, useContext } from "react";
 import { Link } from "react-router-dom";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
+import Container from "react-bootstrap/Container";
 import Button from "react-bootstrap/Button";
+import Spinner from "react-bootstrap/Spinner";
 import ItemList from "../components/ItemList";
 import AuthContext from "../context/AuthContext";
+import { config } from "../Constants";
+
+const url = config.url.API_URL;
 
 const HomePage = () => {
     const [items, setItems] = useState([]);
     const { accessToken } = useContext(AuthContext);
+
+    const [spinner, setSpinner] = useState(null);
 
     useEffect(() => {
         getItems();
     }, []);
 
     const getItems = async () => {
+        setSpinner(true);
         const options = {
             method: "GET",
             headers: {
@@ -22,36 +30,34 @@ const HomePage = () => {
                 Authorization: `Bearer ${accessToken}`,
             },
         };
-        const response = await fetch("http://localhost:8000/items/", options);
+        const response = await fetch(`${url}/items/`, options);
         const data = await response.json();
-        console.log("Data", data);
         setItems(data);
+
+        setTimeout(() => {
+            setSpinner(false);
+        }, 1000);
     };
 
     return (
-        <>
-            <h1>Store</h1>
-            <div className="mt-5 mb-5" style={{ width: "100%" }}>
-                Empty space
-            </div>
-            <Row>
-                <Col sm={4}>Some data</Col>
-                <Col sm={8}>
-                    <Row md={2} xs={1} lg={4}>
+        <div className="mt-4 mb-5">
+            {spinner === null ? (
+                <></>
+            ) : spinner ? (
+                <>
+                    <Spinner></Spinner>
+                </>
+            ) : (
+                <Container>
+                    <h1>Store</h1>
+                    <div className="main-home-div">
                         {items.map((item) => (
-                            <Col sm key={item.id} style={{ width: "15rem" }}>
-                                <ItemList item={item} />
-                                <Link to={`/detail/${item.id}`}>
-                                    <Button className="flush-button">
-                                        Detail View
-                                    </Button>
-                                </Link>
-                            </Col>
+                            <ItemList key={item.id} item={item} />
                         ))}
-                    </Row>
-                </Col>
-            </Row>
-        </>
+                    </div>
+                </Container>
+            )}
+        </div>
     );
 };
 

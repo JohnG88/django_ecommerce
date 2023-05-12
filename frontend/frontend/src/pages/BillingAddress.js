@@ -8,6 +8,9 @@ import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
 import Accordion from "react-bootstrap/Accordion";
 import AuthContext from "../context/AuthContext";
+import { config } from "../Constants";
+
+const url = config.url.API_URL;
 
 const BillingAddress = () => {
     const { accessToken } = useContext(AuthContext);
@@ -23,24 +26,8 @@ const BillingAddress = () => {
     const [value, setValue] = useState(0);
 
     useEffect(() => {
-        //getCSRFToken();
         getBilling();
     }, []);
-
-    /*  
-    const getCSRFToken = () => {
-        fetch("http://localhost:8000/csrf", {
-            credentials: "include",
-        })
-            .then((res) => {
-                let csrfToken = res.headers.get("X-CSRFToken");
-                setCsrftoken(csrfToken);
-            })
-            .catch((error) => {
-                console.log(error);
-            });
-    };
-    */
 
     const getBilling = async () => {
         const requestOptions = {
@@ -50,24 +37,15 @@ const BillingAddress = () => {
                 Authorization: `Bearer ${accessToken}`,
             },
         };
-        const response = await fetch(
-            "http://localhost:8000/shipping/",
-            requestOptions
-        );
+        const response = await fetch(`${url}/shipping/`, requestOptions);
         const data = await response.json();
         const b_address = data.filter((item) => item.address_type == "B");
         setBillingAddress(b_address);
-        console.log("Billing data", data);
     };
-
-    console.log("Real billing address", billingAddress);
 
     const handleBillingChk = (e) => {
         if (e.target.checked) {
-            console.log("Checkbox is checked");
-            console.log("value", e.target.value);
         } else {
-            console.log("Checkbox is Not checked");
         }
         setDefaultBilling((current) => !current);
         setValue(e.target.value);
@@ -75,14 +53,11 @@ const BillingAddress = () => {
 
     const checkDefaultCheckbox = (e) => {
         if (e.target.checked) {
-            console.log("Checkbox is checked");
             setCheckboxCheck(true);
         } else {
-            console.log("Checkbox is not checked");
             setCheckboxCheck(false);
         }
     };
-    console.log("Checkbox", checkboxCheck);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -106,12 +81,8 @@ const BillingAddress = () => {
                 zipcode: zipcode,
             }),
         };
-        const response = await fetch(
-            "http://localhost:8000/shipping/",
-            requestOptions
-        );
+        const response = await fetch(`${url}/shipping/`, requestOptions);
         const data = await response.json();
-        console.log("billing post", data);
         setAddress("");
         setApt("");
         setCity("");
@@ -135,11 +106,10 @@ const BillingAddress = () => {
             body: JSON.stringify({ user_default_billing: true, default: true }),
         };
         const response = await fetch(
-            `http://localhost:8000/shipping/${value}/`,
+            `${url}/shipping/${value}/`,
             requestOptions
         );
         const data = await response.json();
-        console.log("Updated value", data);
         getBilling();
     };
 
@@ -239,7 +209,7 @@ const BillingAddress = () => {
 
             <div>
                 <Container>
-                    <Row>
+                    <Row className="billing-flex">
                         <Col>
                             <div>
                                 <div>
@@ -275,7 +245,10 @@ const BillingAddress = () => {
                                                 </Row>
                                             </Card>
                                         ))}
-                                        <Button type="submit">
+                                        <Button
+                                            className="set-default-billing-btn"
+                                            type="submit"
+                                        >
                                             Set default address
                                         </Button>
                                     </form>

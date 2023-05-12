@@ -51,9 +51,16 @@ class Item(models.Model):
     price = models.DecimalField(max_digits=6, decimal_places=2, default=Decimal('0.00'))
     description = models.TextField(blank=True)
     stock = models.PositiveIntegerField(default=0)
+    stock_limit = models.PositiveIntegerField(default=0)
     sold = models.PositiveIntegerField(default=0)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
+
+    # checks if pk exist, if it doesn't then add value of stock to stock limit, the stock limit won't update on each save, just initial, you can still update limit from admin or views
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.stock_limit = self.stock
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f'{self.name} | {self.price} | {self.stock} | {self.sold}'
@@ -68,7 +75,7 @@ class OrderItem(models.Model):
     refunded = models.BooleanField(default=False)
 
     def __str__(self):
-        return f'{self.quantity} of {self.item.name}'
+        return f'Id {self.id} | {self.quantity} of {self.item.name} | stock {self.item.stock}'
    
     def get_total_item_price(self):
         return self.quantity * self.item.price

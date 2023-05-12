@@ -2,29 +2,31 @@ import React, { useState, useEffect, useContext } from "react";
 import { Link, useParams } from "react-router-dom";
 import SavedItem from "../components/SavedItem";
 import AuthContext from "../context/AuthContext";
+import { config } from "../Constants";
+
+const url = config.url.API_URL;
 
 const AddOrder = () => {
-    const { acceToken } = useContext(AuthContext);
+    const { accessToken } = useContext(AuthContext);
     const [savedItem, setSavedItem] = useState([]);
     const [user, setUser] = useState([]);
     const [item, setItem] = useState([]);
     const params = useParams();
     const savedId = params.savedId;
-
+    /*
+    const pythonAnywhereOrderItemURL =
+        "https://johng.pythonanywhere.com/order-item/";
+    const devOrderItemURL = `http://localhost:8000/order-item/${savedId}/`;
+    */
     useEffect(() => {
         getSavedItem();
     }, [savedId]);
 
     const getSavedItem = async () => {
-        const response = await fetch(
-            `http://localhost:8000/order-item/${savedId}/`,
-            {
-                credentials: "include",
-            }
-        );
+        const response = await fetch(`${url}/order-item/${savedId}/`, {
+            credentials: "include",
+        });
         const data = await response.json();
-        console.log("Data", data);
-        console.log("Customer", data.customer);
         setSavedItem(data);
         setUser(data);
         setItem(data);

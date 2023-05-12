@@ -11,7 +11,7 @@ const Register = () => {
     const { registerUser } = useContext(AuthContext);
 
     return (
-        <div className="d-flex justify-content-center align-items-center register-login-div">
+        <div className="d-flex mb-5 justify-content-center align-items-center register-login-div">
             {/*<form onSubmit={registerUser}>
                 <input
                     type="text"
