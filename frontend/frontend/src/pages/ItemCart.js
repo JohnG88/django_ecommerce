@@ -33,7 +33,7 @@ const ItemCart = () => {
     //const [showButton, setShowButton] = useState(false);
     const [changedItemId, setChangedItemId] = useState(null);
     //const [isInputValid, setIsInputValid] = useState(true);
-    const [maxLimit, setMaxLimit] = useState(null);
+    const [showAlert, setShowAlert] = useState(null);
 
     useEffect(() => {
         getCartItems();
@@ -200,13 +200,15 @@ const ItemCart = () => {
                 const newStock =
                     item.item_detail.stock +
                     (prevQuantity - Number(newQuantity));
-                const isInputValid = newQuantity <= item.item_detail.stock;
-                const hasQuantityChanged = prevQuantity !== Number(newQuantity);
-                const showButton = hasQuantityChanged && isInputValid;
+                //const isInputValid =
+                //    newQuantity <= item.quantity + item.item_detail.stock;
+                //const hasQuantityChanged = prevQuantity !== Number(newQuantity);
+                const showButton = prevQuantity !== Number(newQuantity);
                 return {
                     ...item,
                     quantity: Number(newQuantity),
                     newStock: newStock,
+                    prevQuantity: prevQuantity,
                     prevStock: prevStock,
                     showButton: showButton,
                 };
@@ -218,17 +220,17 @@ const ItemCart = () => {
         setItems(
             updatedItems.map((item) => {
                 if (item.id === itemId) {
-                    const hasQuantityChanged =
-                        item.quantity !== item.item_detail.stock;
-                    const exceedLimit = item.quantity >= item.item_detail.stock;
-                    const showAlert = hasQuantityChanged && exceedLimit;
+                    //const hasQuantityChanged =
+                    //    item.quantity !== item.item_detail.stock;
+                    //const exceedLimit = item.quantity > item.item_detail.stock;
+                    //const showAlert = hasQuantityChanged && exceedLimit;
                     return {
                         ...item,
                         item_detail: {
                             ...item.item_detail,
                             stock: item.newStock,
                         },
-                        showAlert: showAlert,
+                        //showAlert: showAlert,
                     };
                 } else {
                     return item;
@@ -274,6 +276,13 @@ const ItemCart = () => {
     const handleSubmit = async (e, itemId, itemOrderId) => {
         e.preventDefault();
         const singleOrder = items.find((item) => item.id === changedItemId);
+        if (
+            singleOrder.quantity >
+            singleOrder.quantity + singleOrder.item_detail.stock
+        ) {
+            setShowAlert(true);
+            return;
+        }
 
         if (singleOrder.quantity === 0) {
             handleDelete(e, singleOrder.id, singleOrder.item_detail.id);
@@ -299,6 +308,7 @@ const ItemCart = () => {
                 const data = await response.json();
 
                 //if (!data.detail) {
+                setShowAlert(false);
                 getCartItems();
                 //}
             } else {
@@ -415,10 +425,14 @@ const ItemCart = () => {
                                         </thead>
                                         {items.map((item) => (
                                             <tbody key={item.id}>
-                                                {item.showAlert && (
-                                                    <Alert variant="danger">
+                                                {showAlert && (
+                                                    <Alert
+                                                        id={item.id}
+                                                        variant="danger"
+                                                    >
                                                         Stock limit is{" "}
-                                                        {item.prevStock}
+                                                        {item.prevQuantity +
+                                                            item.prevStock}
                                                     </Alert>
                                                 )}
                                                 <tr>
