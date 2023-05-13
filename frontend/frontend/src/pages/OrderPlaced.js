@@ -13,14 +13,9 @@ const url = config.url.API_URL;
 
 const OrderPlaced = () => {
     const { accessToken } = useContext(AuthContext);
-    //const [csrftoken, setCsrftoken] = useState("");
     const [order, setOrder] = useState(null);
     const [orderItems, setOrderItems] = useState([]);
     const [spinner, setSpinner] = useState(null);
-
-    const pythonAnywhereOrderPlacedURL =
-        "https://johng.pythonanywhere.com/order-placed/";
-    const devOrderPlacedURL = "http://localhost:8000/order-placed/";
 
     useEffect(() => {
         //getCSRFToken();
@@ -55,7 +50,6 @@ const OrderPlaced = () => {
         };
         const response = await fetch(`${url}/order-placed/`, requestOptions);
         const data = await response.json();
-        console.log("Data", data);
         setOrder(data);
         const allOrderedItems = data.map((item) =>
             setOrderItems(item.order_items)

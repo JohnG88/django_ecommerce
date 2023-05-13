@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
-import SavedItem from "../components/SavedItem";
+//import SavedItem from "../components/SavedItem";
 import { Link } from "react-router-dom";
 import Card from "react-bootstrap/Card";
 import Row from "react-bootstrap/Row";
@@ -10,8 +10,8 @@ import Table from "react-bootstrap/Table";
 import Form from "react-bootstrap/Form";
 import InputGroup from "react-bootstrap/InputGroup";
 import Spinner from "react-bootstrap/Spinner";
-import Dropdown from "react-bootstrap/Dropdown";
-import DropdownButton from "react-bootstrap/DropdownButton";
+//import Dropdown from "react-bootstrap/Dropdown";
+//import DropdownButton from "react-bootstrap/DropdownButton";
 import AuthContext from "../context/AuthContext";
 import { config } from "../Constants";
 
@@ -23,15 +23,15 @@ const ItemCart = () => {
     const [items, setItems] = useState(null);
     //const [csrftoken, setCsrftoken] = useState("");
     const [itemDetailList, setItemDetailList] = useState("");
-    const [selectedOptions, setSelectedOptions] = useState(0);
+    //const [selectedOptions, setSelectedOptions] = useState(0);
 
-    const [numberForDelete, setNumberForDelete] = useState(1);
+    //const [numberForDelete, setNumberForDelete] = useState(1);
     const [total, setTotal] = useState(0);
     const [spinner, setSpinner] = useState(false);
-    const [isLoading, setIsLoading] = useState(null);
-    const [showButton, setShowButton] = useState(false);
+    //const [isLoading, setIsLoading] = useState(null);
+    //const [showButton, setShowButton] = useState(false);
     const [changedItemId, setChangedItemId] = useState(null);
-    const [isInputValid, setIsInputValid] = useState(true);
+    //const [isInputValid, setIsInputValid] = useState(true);
 
     useEffect(() => {
         getCartItems();
@@ -66,7 +66,7 @@ const ItemCart = () => {
     */
 
     const getCartItems = async () => {
-        setIsLoading(true);
+        //setIsLoading(true);
         setSpinner(true);
         const requestOptions = {
             method: "GET",
@@ -84,7 +84,7 @@ const ItemCart = () => {
             return Number(str);
         });
 
-        const quantityInOrder = data.map((num) => num.quantity);
+        //const quantityInOrder = data.map((num) => num.quantity);
 
         // Add , 0 to reduce to not get TypeError: Reduce of empty array with no initial value.
         const totalPrice = stringToNum.reduce((total, item) => total + item, 0);
@@ -93,17 +93,17 @@ const ItemCart = () => {
         //    JSON.parse(a).reduce((acc, curr) => acc + curr)
         //);
         //console.log("Item total reducer 2", totalPrice2);
-        const itemResults = data.item_detail;
+        //const itemResults = data.item_detail;
         setItems(data);
         setItemDetailList(itemDetail);
         setTotal(totalPrice.toFixed(2));
-        setShowButton(false);
+        //setShowButton(false);
 
         setTimeout(() => {
             setSpinner(false);
         }, 1000);
 
-        setIsLoading(false);
+        //setIsLoading(false);
     };
 
     const handleDelete = (e, orderId, itemId) => {
@@ -135,10 +135,10 @@ const ItemCart = () => {
     };
     */
 
-    const removeItem = async (id) => {
+    function removeItem(id) {
         const newList = items.filter((item) => item.id !== id);
         setItems(newList);
-    };
+    }
     /*
     const handleSelect = (id, value) => {
         setSelectedOptions((prevSelectedOptions) => ({
@@ -157,18 +157,22 @@ const ItemCart = () => {
     */
 
     function handleQuantityChange(itemId, newQuantity) {
-        setShowButton(true);
+        //setShowButton(true);
         const updatedItems = items.map((item) => {
             if (item.id === itemId) {
-                setIsInputValid(newQuantity < item.item_detail.stock_limit);
+                //setIsInputValid(newQuantity < item.item_detail.stock_limit);
                 const prevQuantity = Number(item.quantity);
                 const newStock =
                     item.item_detail.stock +
                     (prevQuantity - Number(newQuantity));
+                const isInputValid = newQuantity < item.item_detail.stock_limit;
+                const hasQuantityChanged = prevQuantity !== Number(newQuantity);
+                const showButton = hasQuantityChanged && isInputValid;
                 return {
                     ...item,
                     quantity: Number(newQuantity),
                     item_detail: { ...item.item_detail, stock: newStock },
+                    showButton: showButton,
                 };
             } else {
                 return item;
@@ -177,8 +181,6 @@ const ItemCart = () => {
         setChangedItemId(itemId);
         setItems(updatedItems);
     }
-
-    console.log("items", items);
 
     //console.log("item id outside", changedItemId);
     /*
@@ -213,14 +215,13 @@ const ItemCart = () => {
 
     // From belo
     //const handleSubmit = async (e, itemId, orderId, number) => {
-    const handleSubmit = async (e, itemId) => {
+    const handleSubmit = async (e, itemId, itemOrderId) => {
         e.preventDefault();
         const singleOrder = items.find((item) => item.id === changedItemId);
 
         if (singleOrder.quantity === 0) {
-            console.log("there is no quantity");
             handleDelete(e, singleOrder.id, singleOrder.item_detail.id);
-        } else {
+        } else if (itemOrderId === changedItemId) {
             updateItem(singleOrder);
 
             if (singleOrder.item_detail.stock >= 0) {
@@ -240,8 +241,6 @@ const ItemCart = () => {
                     requestOptions
                 );
                 const data = await response.json();
-
-                console.log("handle submit data", data);
 
                 //if (!data.detail) {
                 getCartItems();
@@ -374,16 +373,6 @@ const ItemCart = () => {
                                                                 />
                                                             </Col>
                                                             <Col md={4}>
-                                                                <h5>
-                                                                    Item q:{" "}
-                                                                    {
-                                                                        item.quantity
-                                                                    }
-                                                                </h5>{" "}
-                                                                <h5>
-                                                                    Item id:{" "}
-                                                                    {item.id}
-                                                                </h5>
                                                                 <p>
                                                                     {
                                                                         item
@@ -399,7 +388,7 @@ const ItemCart = () => {
                                                                     }
                                                                 </p>{" "}
                                                                 <div className="qty-btn-group">
-                                                                    <div>
+                                                                    <div className="mb-2">
                                                                         <Form>
                                                                             <InputGroup className="item-purchase-input">
                                                                                 <Form.Control
@@ -434,8 +423,8 @@ const ItemCart = () => {
                                                                             </InputGroup>
                                                                         </Form>
                                                                     </div>
-                                                                    {showButton && (
-                                                                        <div>
+                                                                    {item.showButton && (
+                                                                        <div className="mb-2">
                                                                             <Button
                                                                                 onClick={(
                                                                                     e
@@ -444,7 +433,8 @@ const ItemCart = () => {
                                                                                         e,
                                                                                         item
                                                                                             .item_detail
-                                                                                            .id
+                                                                                            .id,
+                                                                                        item.id
                                                                                     )
                                                                                 }
                                                                                 style={{

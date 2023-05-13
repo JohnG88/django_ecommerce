@@ -24,7 +24,6 @@ export default AuthContext;
 
 export const AuthProvider = ({ children }) => {
     const navigate = useNavigate();
-    const [contextError, setContextError] = useState(null);
 
     // get user info from access token
     //const [user, setUser] = useState(null);
@@ -51,6 +50,7 @@ export const AuthProvider = ({ children }) => {
     const [profileAvatar, setProfileAvatar] = useState([]);
 
     const [loading, setLoading] = useState(true);
+    //const [contextError, setContextError] = useState(null);
 
     /* 
     const options = {
@@ -79,7 +79,7 @@ export const AuthProvider = ({ children }) => {
                 re_password: e.target.re_password.value,
             }),
         });
-        const data = await response.json();
+        //const data = await response.json();
     };
 
     const loginUser = async (e) => {
@@ -192,9 +192,9 @@ export const AuthProvider = ({ children }) => {
             `${url}/order-item/${orderId}/`,
             requestOptions
         );
-        if (response.body && response.body.locked) {
-            console.log("Order Item has been deleted.");
-        }
+        //if (response.body && response.body.locked) {
+        //    console.log("Order Item has been deleted.");
+        //}
     };
 
     const updateStockOnDelete = async (
@@ -204,7 +204,7 @@ export const AuthProvider = ({ children }) => {
         items
     ) => {
         const orderItemId = items.find((item) => item.id === orderId);
-        const singleItem = itemDetailList.find((x) => x.id === itemId);
+        //const singleItem = itemDetailList.find((x) => x.id === itemId);
 
         const requestOptions = {
             method: "PATCH",
@@ -221,7 +221,6 @@ export const AuthProvider = ({ children }) => {
         const response = await fetch(`${url}/items/${itemId}/`, requestOptions);
 
         const data = await response.json();
-        console.log("Item data", data);
         //removeOrderItem(id, items, orderId);
     };
 
@@ -237,36 +236,37 @@ export const AuthProvider = ({ children }) => {
     };
 
     const updateToken = async () => {
-        try {
-            const response = await fetch(`${url}/api/token/refresh/`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ refresh: refreshToken }),
-            });
-            if (!response.ok) {
-                throw new Error("API request failed.");
-            }
-            const data = await response.json();
+        //try {
+        const response = await fetch(`${url}/api/token/refresh/`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ refresh: refreshToken }),
+        });
+        //if (!response.ok) {
+        //    throw new Error("API request failed.");
+        //    navigate("/login");
+        //}
+        const data = await response.json();
 
-            if (response.status === 200) {
-                setAccessToken(data.access);
-                localStorage.setItem("access", JSON.stringify(data.access));
+        if (response.status === 200) {
+            setAccessToken(data.access);
+            localStorage.setItem("access", JSON.stringify(data.access));
 
-                setUser(jwt_decode(data.access));
-            } else {
-                logoutUser();
-            }
-
-            // call when loading is true on first render
-            if (loading) {
-                setLoading(false);
-            }
-        } catch (error) {
-            console.log(error.message);
-            setContextError(error.message);
+            setUser(jwt_decode(data.access));
+        } else {
+            logoutUser();
         }
+
+        // call when loading is true on first render
+        if (loading) {
+            setLoading(false);
+        }
+        //} catch (error) {
+        //    console.log(error.message);
+        //    setContextError(error.message);
+        //}
     };
 
     // always create call to backend for refresh token 10 seconds or a minute before token expires
@@ -286,7 +286,7 @@ export const AuthProvider = ({ children }) => {
     }, [accessToken, loading]);
 
     const contextData = {
-        contextError: contextError,
+        //contextError: contextError,
         registerUser: registerUser,
         user: user,
         loginUser: loginUser,

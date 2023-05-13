@@ -18,7 +18,7 @@ const Profile = () => {
 
     const ref = useRef();
 
-    console.log("profile page avatar", profileAvatar);
+    //console.log("profile page avatar", profileAvatar);
 
     //const [userData, setUserData] = useState([]);
     //console.log("profile page function", userProfile);
@@ -59,7 +59,6 @@ const Profile = () => {
         <Container className="mt-4">
             <Row>
                 <Col>
-                    <h1>No</h1>
                     <img
                         className="profile-image"
                         src={profileData.avatar}
@@ -112,6 +111,7 @@ const Profile = () => {
                         <Link
                             className="remove-link-decorations"
                             to="/shipping"
+                            state={{ from: "/profile" }}
                         >
                             Shipping Address
                         </Link>

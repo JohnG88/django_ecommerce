@@ -612,7 +612,7 @@ class OrderPlacedViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = self.queryset
-        latest_order = queryset.filter(customer_id=self.request.user.id)[:1]
+        latest_order = queryset.filter(customer_id=self.request.user.id, ordered=True)[:1]
         return latest_order
 
 
@@ -636,7 +636,7 @@ class RefundOrderViewset(viewsets.ModelViewSet):
         print(f"get year {current_year}")
         
         queryset = self.queryset
-        refunded_orders = queryset.filter(customer_id=self.request.user.id, ordered_date__year=current_year)
+        refunded_orders = queryset.filter(customer_id=self.request.user.id, ordered_date__year=current_year, ordered=True)
         return refunded_orders
     '''
     def post(self, request):

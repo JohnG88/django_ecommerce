@@ -207,7 +207,7 @@ const BillingAddress = () => {
             </div>
             */}
 
-            <div>
+            <div className="mt-2">
                 <Container>
                     <Row className="billing-flex">
                         <Col>
@@ -245,18 +245,20 @@ const BillingAddress = () => {
                                                 </Row>
                                             </Card>
                                         ))}
-                                        <Button
-                                            className="set-default-billing-btn"
-                                            type="submit"
-                                        >
-                                            Set default address
-                                        </Button>
+                                        <div className="mt-2">
+                                            <Button
+                                                className="set-default-billing-btn"
+                                                type="submit"
+                                            >
+                                                Set Default Billing
+                                            </Button>
+                                        </div>
                                     </form>
                                 </div>
                             </div>
                         </Col>
                         <Col>
-                            <Link to={"/ordered-items/"}>Go back to order</Link>
+                            <Link to={"/profile/"}>Go back to profile</Link>
                             <Accordion>
                                 <Accordion.Item eventKey="0">
                                     <Accordion.Header>
@@ -265,80 +267,89 @@ const BillingAddress = () => {
                                     <Accordion.Body>
                                         <Form onSubmit={handleSubmit}>
                                             <Card>
-                                                <Form.Group className="mb-2 form-group-label">
-                                                    <Form.Label>
-                                                        Address
-                                                    </Form.Label>
-                                                    <Form.Control
-                                                        placeholder="Address"
-                                                        value={address}
-                                                        onChange={(e) =>
-                                                            setAddress(
-                                                                e.target.value
-                                                            )
-                                                        }
-                                                    />
-                                                </Form.Group>
+                                                <Container>
+                                                    <Form.Group className="mb-2 form-group-label">
+                                                        <Form.Label>
+                                                            Address
+                                                        </Form.Label>
+                                                        <Form.Control
+                                                            placeholder="Address"
+                                                            value={address}
+                                                            onChange={(e) =>
+                                                                setAddress(
+                                                                    e.target
+                                                                        .value
+                                                                )
+                                                            }
+                                                        />
+                                                    </Form.Group>
 
-                                                <Form.Group className="mb-2 form-group-label">
-                                                    <Form.Label>Apt</Form.Label>
-                                                    <Form.Control
-                                                        placeholder="Apt"
-                                                        value={apt}
-                                                        onChange={(e) =>
-                                                            setApt(
-                                                                e.target.value
-                                                            )
-                                                        }
-                                                    />
-                                                </Form.Group>
+                                                    <Form.Group className="mb-2 form-group-label">
+                                                        <Form.Label>
+                                                            Apt
+                                                        </Form.Label>
+                                                        <Form.Control
+                                                            placeholder="Apt"
+                                                            value={apt}
+                                                            onChange={(e) =>
+                                                                setApt(
+                                                                    e.target
+                                                                        .value
+                                                                )
+                                                            }
+                                                        />
+                                                    </Form.Group>
 
-                                                <Form.Group className="mb-2 form-group-label">
-                                                    <Form.Label>
-                                                        City
-                                                    </Form.Label>
-                                                    <Form.Control
-                                                        placeholder="City"
-                                                        value={city}
-                                                        onChange={(e) =>
-                                                            setCity(
-                                                                e.target.value
-                                                            )
-                                                        }
-                                                    />
-                                                </Form.Group>
+                                                    <Form.Group className="mb-2 form-group-label">
+                                                        <Form.Label>
+                                                            City
+                                                        </Form.Label>
+                                                        <Form.Control
+                                                            placeholder="City"
+                                                            value={city}
+                                                            onChange={(e) =>
+                                                                setCity(
+                                                                    e.target
+                                                                        .value
+                                                                )
+                                                            }
+                                                        />
+                                                    </Form.Group>
 
-                                                <Form.Group className="mb-2 form-group-label">
-                                                    <Form.Label>
-                                                        State
-                                                    </Form.Label>
-                                                    <Form.Control
-                                                        placeholder="State"
-                                                        value={state}
-                                                        onChange={(e) =>
-                                                            setState(
-                                                                e.target.value
-                                                            )
-                                                        }
-                                                    />
-                                                </Form.Group>
+                                                    <Form.Group className="mb-2 form-group-label">
+                                                        <Form.Label>
+                                                            State
+                                                        </Form.Label>
+                                                        <Form.Control
+                                                            placeholder="State"
+                                                            value={state}
+                                                            onChange={(e) =>
+                                                                setState(
+                                                                    e.target
+                                                                        .value
+                                                                )
+                                                            }
+                                                        />
+                                                    </Form.Group>
 
-                                                <Form.Group className="form-group-label">
-                                                    <Form.Label>
-                                                        Zipcode
-                                                    </Form.Label>
-                                                    <Form.Control
-                                                        placeholder="Zipcode"
-                                                        value={zipcode}
-                                                        onChange={(e) =>
-                                                            setZipcode(
-                                                                e.target.value
-                                                            )
-                                                        }
-                                                    />
-                                                </Form.Group>
+                                                    <Form.Group className="form-group-label mb-2">
+                                                        <Form.Label>
+                                                            Zipcode
+                                                        </Form.Label>
+                                                        <Form.Control
+                                                            placeholder="Zipcode"
+                                                            value={zipcode}
+                                                            onChange={(e) =>
+                                                                setZipcode(
+                                                                    e.target
+                                                                        .value
+                                                                )
+                                                            }
+                                                        />
+                                                    </Form.Group>
+                                                </Container>
                                             </Card>
-                                            <Form.Group>
+                                            <Form.Group className="mb-2">
                                                 <Row xs="auto">
                                                     <Col>
                                                         <Form.Check
@@ -363,9 +374,11 @@ const BillingAddress = () => {
                                                     </Col>
                                                 </Row>
                                             </Form.Group>
-                                            <Button type="submit">
-                                                Save Shipping Address
-                                            </Button>
+                                            <div className="mt-2">
+                                                <Button type="submit">
+                                                    Save Billing Address
+                                                </Button>
+                                            </div>
                                         </Form>
                                     </Accordion.Body>
                                 </Accordion.Item>

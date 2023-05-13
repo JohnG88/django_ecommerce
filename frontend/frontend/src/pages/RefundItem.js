@@ -176,17 +176,17 @@ const RefundItem = () => {
                                         />
                                     </div>
                                     <div>
-                                        <div>
+                                        <div className="p-1">
                                             <p>{item.description}</p>
-                                            <p>{item.price}</p>
+                                            <p>${item.price}</p>
                                         </div>
                                     </div>
                                     <div className="input-refund-div">
-                                        <p>
+                                        <p className="p-1">
                                             {initialNumber} items available for
                                             return.
                                         </p>
-                                        <InputGroup className="refund-item-qi mb-2">
+                                        <InputGroup className="refund-item-qi mb-2 p-1">
                                             <Form.Control
                                                 type="number"
                                                 id="number1"
@@ -217,7 +217,14 @@ const RefundItem = () => {
                                         </div>
                                     ) : (
                                         <div>
-                                            <div>{totalNumber.toFixed(2)}</div>
+                                            <div>
+                                                <div>
+                                                    Total Amount to Refund
+                                                </div>
+                                                <div>
+                                                    ${totalNumber.toFixed(2)}
+                                                </div>
+                                            </div>
                                             <Form
                                                 onSubmit={(e) =>
                                                     handleSubmit(e)

@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import Card from "react-bootstrap/Card";
 import Col from "react-bootstrap/Col";
-import Row from "react-bootstrap/Row";
+//import Row from "react-bootstrap/Row";
 import Spinner from "react-bootstrap/Spinner";
 import Container from "react-bootstrap/Container";
 import AuthContext from "../context/AuthContext";
@@ -20,10 +20,6 @@ const RefundConfirm = () => {
 
     const itemId = params.orderItemId;
 
-    const pythonAnywhereRefundItemURL =
-        "https://johng.pythonanywhere.com/refund-item/";
-    const devRefundItemURL = "http://localhost:8000/refund-item/";
-
     useEffect(() => {
         getOrderItems();
     }, [itemId]);
@@ -39,7 +35,6 @@ const RefundConfirm = () => {
         });
         const data = await response.json();
         setOrderItem(data);
-        console.log("refund confirm item", data);
         const itemDetail = data.item_detail;
         setItem(itemDetail);
         setTimeout(() => {

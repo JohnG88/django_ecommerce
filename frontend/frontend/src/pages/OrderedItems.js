@@ -38,7 +38,7 @@ const OrderItems = () => {
     const [error, setError] = useState(null);
     const [spinner, setSpinner] = useState(null);
     const [changedItemId, setChangedItemId] = useState(null);
-    const [showButton, setShowButton] = useState(false);
+    //const [showButton, setShowButton] = useState(false);
     const stripe = useStripe();
     const elements = useElements();
 
@@ -96,7 +96,6 @@ const OrderItems = () => {
         //console.log("numItems", numItems);
         //setNumberOfItems(getNumItems);
         setCustomerInfo(info);
-        setShowButton(false);
 
         setTimeout(() => {
             setSpinner(false);
@@ -173,17 +172,21 @@ const OrderItems = () => {
     */
 
     function handleQuantityChange(itemId, newQuantity) {
-        setShowButton(true);
+        //setShowButton(true);
         const updatedItems = items.map((item) => {
             if (item.id === itemId) {
                 const prevQuantity = Number(item.quantity);
                 const newStock =
                     item.item_detail.stock +
                     (prevQuantity - Number(newQuantity));
+                const isInputValid = newQuantity < item.item_detail.stock_limit;
+                const hasQuantityChanged = prevQuantity !== Number(newQuantity);
+                const showButton = hasQuantityChanged && isInputValid;
                 return {
                     ...item,
                     quantity: Number(newQuantity),
                     item_detail: { ...item.item_detail, stock: newStock },
+                    showButton: showButton,
                 };
             } else {
                 return item;
@@ -193,13 +196,13 @@ const OrderItems = () => {
         setItems(updatedItems);
     }
 
-    const handleSubmit = async (e, orderId) => {
+    const handleSubmit = async (e, orderId, itemOrderId) => {
         e.preventDefault();
         const singleOrder = items.find((item) => item.id === changedItemId);
 
         if (singleOrder.quantity === 0) {
             handleDelete(e, singleOrder.id, singleOrder.item_detail.id);
-        } else {
+        } else if (itemOrderId === changedItemId) {
             updateItem(singleOrder);
             if (singleOrder.item_detail.stock >= 0) {
                 const requestOptions = {
@@ -363,7 +366,10 @@ const OrderItems = () => {
                                     </Col>
                                     <Col>
                                         {" "}
-                                        <Link to={"/shipping/"}>
+                                        <Link
+                                            to="/shipping"
+                                            state={{ from: "/ordered-items/" }}
+                                        >
                                             {shippingInfo.length > 0 ? (
                                                 <p>Change</p>
                                             ) : (
@@ -378,135 +384,144 @@ const OrderItems = () => {
                                 {items.map((item) => (
                                     <div key={item.id}>
                                         <Card className="mb-2" key={item.id}>
-                                            <Row className="purchase-item-info">
-                                                <Col>
-                                                    <div>
-                                                        <Card.Img
-                                                            src={
-                                                                item.item_detail
-                                                                    .image
-                                                            }
-                                                            style={{
-                                                                width: "200px",
-                                                            }}
-                                                        />
-                                                    </div>
-                                                </Col>
-                                                <Col className="mid-col-checkout">
-                                                    <p>
-                                                        {item.item_detail.name}
-                                                    </p>
-                                                    <p>
-                                                        {
-                                                            item.item_detail
-                                                                .description
-                                                        }
-                                                    </p>
-                                                    <p>
-                                                        {item.item_detail.stock}
-                                                    </p>
-                                                    <div className="qty-btn-group">
+                                            <Container>
+                                                <Row className="purchase-item-info">
+                                                    <Col>
                                                         <div>
-                                                            <Form>
-                                                                <InputGroup className="item-purchase-input">
-                                                                    <Form.Control
-                                                                        type="number"
-                                                                        inputMode="numeric"
-                                                                        id="number2"
-                                                                        min={1}
-                                                                        value={
-                                                                            item.quantity
-                                                                        }
-                                                                        max={
-                                                                            item
-                                                                                .item_detail
-                                                                                .stock_limit
-                                                                        }
-                                                                        onChange={(
+                                                            <Card.Img
+                                                                src={
+                                                                    item
+                                                                        .item_detail
+                                                                        .image
+                                                                }
+                                                                style={{
+                                                                    width: "200px",
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    </Col>
+                                                    <Col className="mid-col-checkout">
+                                                        <p>
+                                                            {
+                                                                item.item_detail
+                                                                    .name
+                                                            }
+                                                        </p>
+                                                        <p>
+                                                            {
+                                                                item.item_detail
+                                                                    .description
+                                                            }
+                                                        </p>
+
+                                                        <div className="qty-btn-group">
+                                                            <div className="mb-2">
+                                                                <Form>
+                                                                    <InputGroup className="item-purchase-input">
+                                                                        <Form.Control
+                                                                            type="number"
+                                                                            inputMode="numeric"
+                                                                            id="number2"
+                                                                            min={
+                                                                                1
+                                                                            }
+                                                                            value={
+                                                                                item.quantity
+                                                                            }
+                                                                            max={
+                                                                                item
+                                                                                    .item_detail
+                                                                                    .stock_limit
+                                                                            }
+                                                                            onChange={(
+                                                                                e
+                                                                            ) =>
+                                                                                handleQuantityChange(
+                                                                                    item.id,
+                                                                                    e
+                                                                                        .target
+                                                                                        .value
+                                                                                )
+                                                                            }
+                                                                        />
+                                                                        <InputGroup.Text>
+                                                                            Qty.
+                                                                        </InputGroup.Text>
+                                                                    </InputGroup>{" "}
+                                                                </Form>{" "}
+                                                            </div>
+                                                            {item.showButton && (
+                                                                <div className="mb-2">
+                                                                    <Button
+                                                                        style={{
+                                                                            width: "95%",
+                                                                        }}
+                                                                        onClick={(
                                                                             e
                                                                         ) =>
-                                                                            handleQuantityChange(
-                                                                                item.id,
-                                                                                e
-                                                                                    .target
-                                                                                    .value
+                                                                            handleSubmit(
+                                                                                e,
+                                                                                item
+                                                                                    .item_detail
+                                                                                    .id,
+                                                                                item.id
                                                                             )
                                                                         }
-                                                                    />
-                                                                    <InputGroup.Text>
-                                                                        Qty.
-                                                                    </InputGroup.Text>
-                                                                </InputGroup>{" "}
-                                                            </Form>{" "}
-                                                        </div>
-                                                        {showButton && (
+                                                                    >
+                                                                        Update
+                                                                    </Button>
+                                                                </div>
+                                                            )}
                                                             <div>
-                                                                <Button
-                                                                    style={{
-                                                                        width: "95%",
-                                                                    }}
-                                                                    onClick={(
-                                                                        e
-                                                                    ) =>
-                                                                        handleSubmit(
-                                                                            e,
-                                                                            item
-                                                                                .item_detail
-                                                                                .id
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    Update
-                                                                </Button>
-                                                            </div>
-                                                        )}
-                                                        <div>
-                                                            <Form>
-                                                                <Button
-                                                                    style={{
-                                                                        width: "95%",
-                                                                    }}
-                                                                    variant="danger"
-                                                                    onClick={(
-                                                                        e
-                                                                    ) =>
-                                                                        handleDelete(
-                                                                            e,
-                                                                            item.id,
-                                                                            item
-                                                                                .item_detail
-                                                                                .id
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    Delete
-                                                                </Button>
-                                                            </Form>
-                                                        </div>{" "}
-                                                    </div>
-                                                </Col>
-                                            </Row>
+                                                                <Form>
+                                                                    <Button
+                                                                        style={{
+                                                                            width: "95%",
+                                                                        }}
+                                                                        variant="danger"
+                                                                        onClick={(
+                                                                            e
+                                                                        ) =>
+                                                                            handleDelete(
+                                                                                e,
+                                                                                item.id,
+                                                                                item
+                                                                                    .item_detail
+                                                                                    .id
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        Delete
+                                                                    </Button>
+                                                                </Form>
+                                                            </div>{" "}
+                                                        </div>
+                                                    </Col>
+                                                </Row>
+                                            </Container>
                                         </Card>
                                     </div>
                                 ))}
                             </div>
                             <Card className="payment-div">
-                                <div className="order-sum-content">
+                                <Container>
                                     <h3>Order Summary</h3>
-                                    <p className="order-sum-p">
-                                        Items Total {total}
-                                    </p>
-                                    <p className="order-sum-p">
-                                        Shipping and Handling ${shipping}
-                                    </p>
-                                    <p className="order-sum-p">
-                                        Total before tax: {totalSum.toFixed(2)}
-                                    </p>
-                                    <p className="order-sum-p">
-                                        Estimated tax to be collected:{" "}
-                                        {caTaxRateSum.toFixed(2)}
-                                    </p>
-                                </div>
+                                    <div className="order-sum-p">
+                                        <p>Items Total</p> <p> {total}</p>
+                                    </div>
+                                    <div className="order-sum-p">
+                                        <p>Shipping and Handling</p>{" "}
+                                        <p> ${shipping}</p>
+                                    </div>
+                                    <div className="order-sum-p">
+                                        <p>Total before tax:</p>{" "}
+                                        <p>{totalSum.toFixed(2)}</p>
+                                    </div>
+                                    <div className="order-sum-p">
+                                        <p>Estimated tax to be collected:</p>
+                                        <p>{caTaxRateSum.toFixed(2)}</p>
+                                    </div>
+                                </Container>
                                 <hr />
                                 <div className="order-sum-content">
                                     <h5>
@@ -514,30 +529,32 @@ const OrderItems = () => {
                                     </h5>
                                 </div>
                                 <hr />
-                                <Form onSubmit={updateOrder}>
-                                    <div className="form-row">
-                                        <label htmlFor="card-element">
-                                            Credit or debit card
-                                        </label>
-                                        <CardElement
-                                            id="card-element"
-                                            onChange={handleChange}
-                                        />
-                                        <div
-                                            className="card-error"
-                                            role="alert"
-                                        >
-                                            {error}
+                                <Container>
+                                    <Form onSubmit={updateOrder}>
+                                        <div className="form-row">
+                                            <label htmlFor="card-element">
+                                                Credit or debit card
+                                            </label>
+                                            <CardElement
+                                                id="card-element"
+                                                onChange={handleChange}
+                                            />
+                                            <div
+                                                className="card-error"
+                                                role="alert"
+                                            >
+                                                {error}
+                                            </div>
                                         </div>
-                                    </div>
-                                    <Button
-                                        className="p-checkout-btn"
-                                        variant="success"
-                                        type="submit"
-                                    >
-                                        Place Order
-                                    </Button>
-                                </Form>
+                                        <Button
+                                            className="p-checkout-btn"
+                                            variant="success"
+                                            type="submit"
+                                        >
+                                            Place Order
+                                        </Button>
+                                    </Form>
+                                </Container>
                             </Card>
                         </div>
                     ) : (

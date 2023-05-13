@@ -30,29 +30,21 @@ const Refund = () => {
     const [arrayLength, setArrayLength] = useState("");
     const [spinner, setSpinner] = useState(false);
     //const [chosenYear, setChosenYear] = useState("");
-    const { urlParams } = useParams();
+    //const { urlParams } = useParams();
     const location = useLocation();
 
     const navigate = useNavigate();
-    const [queryParameters] = useSearchParams();
-    console.log(queryParameters);
+    //const [queryParameters] = useSearchParams();
 
-    const chosenYear = queryParameters.get("year");
+    //const chosenYear = queryParameters.get("year");
     //setChosenYear(paraYear);
     //console.log("chosen_year", chosenYear);
 
     //console.log("option", option);
 
-    const pythonAnywhereRefundOrderURL =
-        "https://johng.pythonanywhere.com/refund-order/";
-    const devRefundOrderURL = "http://localhost:8000/refund-order/";
-
     useEffect(() => {
         getOrders();
-        const currentParams = Object.fromEntries([...queryParameters]);
-        console.log("current params", currentParams);
-        console.log("url params", urlParams);
-        console.log("location", location);
+        //const currentParams = Object.fromEntries([...queryParameters]);
 
         //setOption(year.getFullYear());
     }, [location.search]);
@@ -100,7 +92,6 @@ const Refund = () => {
             options
         );
         const data = await response.json();
-        console.log("order refund data", data);
         setOrders(data);
         setArrayLength(data.length);
         setSpinner(false);

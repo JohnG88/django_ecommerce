@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useContext } from "react";
-import { Link } from "react-router-dom";
-import Col from "react-bootstrap/Col";
-import Row from "react-bootstrap/Row";
+//import { Link } from "react-router-dom";
+//import Col from "react-bootstrap/Col";
+//import Row from "react-bootstrap/Row";
 import Container from "react-bootstrap/Container";
-import Button from "react-bootstrap/Button";
+//import Button from "react-bootstrap/Button";
 import Spinner from "react-bootstrap/Spinner";
 import Alert from "react-bootstrap/Alert";
 import ItemList from "../components/ItemList";
@@ -14,7 +14,7 @@ const url = config.url.API_URL;
 
 const HomePage = () => {
     const [items, setItems] = useState([]);
-    const { accessToken, contextError } = useContext(AuthContext);
+    const { accessToken } = useContext(AuthContext);
 
     const [spinner, setSpinner] = useState(null);
     const [error, setError] = useState(null);
@@ -58,7 +58,6 @@ const HomePage = () => {
     return (
         <div className="mt-4 mb-5">
             {error && <Alert variant="warning">{error}</Alert>}
-            {contextError && <div>{contextError}</div>}
             {spinner === null ? (
                 <></>
             ) : spinner ? (

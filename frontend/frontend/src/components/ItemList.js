@@ -12,6 +12,7 @@ const ItemList = ({ item }) => {
                 src={item.image}
                 style={{
                     objectFit: "cover",
+                    height: "300px",
                 }}
             />
             <Card.Body>

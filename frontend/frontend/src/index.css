@@ -341,7 +341,8 @@ footer {
 }
 
 .order-sum-p {
-    margin-bottom: -0.3rem;
+    display: flex;
+    justify-content: space-between;
 }
 
 #card-element {

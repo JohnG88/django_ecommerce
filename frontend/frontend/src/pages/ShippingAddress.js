@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import Card from "react-bootstrap/Card";
 import Col from "react-bootstrap/Col";
@@ -14,6 +14,7 @@ const url = config.url.API_URL;
 const ShippingAddress = () => {
     //const userRef = useRef();
     const navigate = useNavigate();
+    const location = useLocation();
     const { accessToken } = useContext(AuthContext);
     const [csrftoken, setCsrftoken] = useState("");
     const [address, setAddress] = useState("");
@@ -25,16 +26,24 @@ const ShippingAddress = () => {
     const [defaultShipping, setDefaultShipping] = useState(false);
     const [checkboxCheck, setCheckboxCheck] = useState(false);
     const [value, setValue] = useState(0);
+    const [profileLink, setProfileLink] = useState(null);
+    const [orderLink, setOrderLink] = useState(null);
 
     const pythonAnywhereShippingURL =
         "https://johng.pythonanywhere.com/shipping/";
     const devShippingURL = "http://localhost:8000/shipping/";
 
     useEffect(() => {
-        //userRef.current.focus();
-        //getCSRFToken();
+        const lastUrl = location.state?.from;
+
+        if (lastUrl === "/ordered-items/") {
+            setOrderLink(true);
+        } else {
+            setProfileLink(true);
+        }
+
         getShipping();
-    }, []);
+    }, [location]);
 
     /*
     const getCSRFToken = () => {
@@ -66,7 +75,6 @@ const ShippingAddress = () => {
         const data = await response.json();
         const s_address = data.filter((item) => item.address_type == "S");
         setShippingAddress(s_address);
-        console.log("Shipping data", data);
     };
 
     const handleShippingChk = (e) => {
@@ -79,7 +87,6 @@ const ShippingAddress = () => {
         setDefaultShipping((current) => !current);
         setValue(e.target.value);
     };
-    console.log("default shipping", defaultShipping);
     /*  
     const checkDefaultCheckbox = (e) => {
         if (e.target.checked) {
@@ -91,7 +98,6 @@ const ShippingAddress = () => {
         }
     };
     */
-    console.log("Checkbox", checkboxCheck);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -117,7 +123,6 @@ const ShippingAddress = () => {
         };
         const response = await fetch(`${url}/shipping/`, requestOptions);
         const data = await response.json();
-        console.log("Shippping", data);
         //navigate("/ordered-items");
         setAddress("");
         setApt("");
@@ -194,17 +199,22 @@ const ShippingAddress = () => {
                                         </Card>
                                     ))}
                                     <Button
-                                        className="set-default-address-btn"
+                                        className="set-default-address-btn mt-2"
                                         type="submit"
                                     >
-                                        Set default address
+                                        Set Default Shipping
                                     </Button>
                                 </form>
                             </div>
                         </div>
                     </Col>
                     <Col>
-                        <Link to={"/ordered-items/"}>Go back to order</Link>
+                        {profileLink && (
+                            <Link to={"/profile/"}>Go back to profile</Link>
+                        )}
+                        {orderLink && (
+                            <Link to={"/ordered-items/"}>Go back to order</Link>
+                        )}
                         <Accordion>
                             <Accordion.Item eventKey="0">
                                 <Accordion.Header>
@@ -213,64 +223,80 @@ const ShippingAddress = () => {
                                 <Accordion.Body>
                                     <Form onSubmit={handleSubmit}>
                                         <Card>
-                                            <Form.Group className="mb-2 form-group-label">
-                                                <Form.Label>Address</Form.Label>
-                                                <Form.Control
-                                                    placeholder="Address"
-                                                    value={address}
-                                                    onChange={(e) =>
-                                                        setAddress(
-                                                            e.target.value
-                                                        )
-                                                    }
-                                                />
-                                            </Form.Group>
+                                            <Container>
+                                                <Form.Group className="mb-2 form-group-label">
+                                                    <Form.Label>
+                                                        Address
+                                                    </Form.Label>
+                                                    <Form.Control
+                                                        placeholder="Address"
+                                                        value={address}
+                                                        onChange={(e) =>
+                                                            setAddress(
+                                                                e.target.value
+                                                            )
+                                                        }
+                                                    />
+                                                </Form.Group>
 
-                                            <Form.Group className="mb-2 form-group-label">
-                                                <Form.Label>Apt</Form.Label>
-                                                <Form.Control
-                                                    placeholder="Apt"
-                                                    value={apt}
-                                                    onChange={(e) =>
-                                                        setApt(e.target.value)
-                                                    }
-                                                />
-                                            </Form.Group>
+                                                <Form.Group className="mb-2 form-group-label">
+                                                    <Form.Label>Apt</Form.Label>
+                                                    <Form.Control
+                                                        placeholder="Apt"
+                                                        value={apt}
+                                                        onChange={(e) =>
+                                                            setApt(
+                                                                e.target.value
+                                                            )
+                                                        }
+                                                    />
+                                                </Form.Group>
 
-                                            <Form.Group className="mb-2 form-group-label">
-                                                <Form.Label>City</Form.Label>
-                                                <Form.Control
-                                                    placeholder="City"
-                                                    value={city}
-                                                    onChange={(e) =>
-                                                        setCity(e.target.value)
-                                                    }
-                                                />
-                                            </Form.Group>
+                                                <Form.Group className="mb-2 form-group-label">
+                                                    <Form.Label>
+                                                        City
+                                                    </Form.Label>
+                                                    <Form.Control
+                                                        placeholder="City"
+                                                        value={city}
+                                                        onChange={(e) =>
+                                                            setCity(
+                                                                e.target.value
+                                                            )
+                                                        }
+                                                    />
+                                                </Form.Group>
 
-                                            <Form.Group className="mb-2 form-group-label">
-                                                <Form.Label>State</Form.Label>
-                                                <Form.Control
-                                                    placeholder="State"
-                                                    value={state}
-                                                    onChange={(e) =>
-                                                        setState(e.target.value)
-                                                    }
-                                                />
-                                            </Form.Group>
+                                                <Form.Group className="mb-2 form-group-label">
+                                                    <Form.Label>
+                                                        State
+                                                    </Form.Label>
+                                                    <Form.Control
+                                                        placeholder="State"
+                                                        value={state}
+                                                        onChange={(e) =>
+                                                            setState(
+                                                                e.target.value
+                                                            )
+                                                        }
+                                                    />
+                                                </Form.Group>
 
-                                            <Form.Group className="form-group-label">
-                                                <Form.Label>Zipcode</Form.Label>
-                                                <Form.Control
-                                                    placeholder="Zipcode"
-                                                    value={zipcode}
-                                                    onChange={(e) =>
-                                                        setZipcode(
-                                                            e.target.value
-                                                        )
-                                                    }
-                                                />
-                                            </Form.Group>
+                                                <Form.Group className="form-group-label mb-2">
+                                                    <Form.Label>
+                                                        Zipcode
+                                                    </Form.Label>
+                                                    <Form.Control
+                                                        placeholder="Zipcode"
+                                                        value={zipcode}
+                                                        onChange={(e) =>
+                                                            setZipcode(
+                                                                e.target.value
+                                                            )
+                                                        }
+                                                    />
+                                                </Form.Group>
+                                            </Container>
                                         </Card>
                                         <Form.Group>
                                             <Row xs="auto">
