@@ -10,6 +10,7 @@ import Table from "react-bootstrap/Table";
 import Form from "react-bootstrap/Form";
 import InputGroup from "react-bootstrap/InputGroup";
 import Spinner from "react-bootstrap/Spinner";
+import Alert from "react-bootstrap/Alert";
 //import Dropdown from "react-bootstrap/Dropdown";
 //import DropdownButton from "react-bootstrap/DropdownButton";
 import AuthContext from "../context/AuthContext";
@@ -32,6 +33,7 @@ const ItemCart = () => {
     //const [showButton, setShowButton] = useState(false);
     const [changedItemId, setChangedItemId] = useState(null);
     //const [isInputValid, setIsInputValid] = useState(true);
+    const [maxLimit, setMaxLimit] = useState(null);
 
     useEffect(() => {
         getCartItems();
@@ -156,22 +158,27 @@ const ItemCart = () => {
     };
     */
 
+    // Original function
+    /*
     function handleQuantityChange(itemId, newQuantity) {
         //setShowButton(true);
         const updatedItems = items.map((item) => {
             if (item.id === itemId) {
                 //setIsInputValid(newQuantity < item.item_detail.stock_limit);
                 const prevQuantity = Number(item.quantity);
+                const prevStock = item.item_detail.stock;
                 const newStock =
                     item.item_detail.stock +
                     (prevQuantity - Number(newQuantity));
-                const isInputValid = newQuantity < item.item_detail.stock_limit;
+                const isInputValid =
+                    newQuantity <= item.item_detail.stock_limit;
                 const hasQuantityChanged = prevQuantity !== Number(newQuantity);
                 const showButton = hasQuantityChanged && isInputValid;
                 return {
                     ...item,
                     quantity: Number(newQuantity),
                     item_detail: { ...item.item_detail, stock: newStock },
+                    prevStock: prevStock,
                     showButton: showButton,
                 };
             } else {
@@ -181,7 +188,56 @@ const ItemCart = () => {
         setChangedItemId(itemId);
         setItems(updatedItems);
     }
+    */
 
+    function handleQuantityChange(itemId, newQuantity) {
+        //setShowButton(true);
+        const updatedItems = items.map((item) => {
+            if (item.id === itemId) {
+                //setIsInputValid(newQuantity < item.item_detail.stock_limit);
+                const prevQuantity = Number(item.quantity);
+                const prevStock = item.item_detail.stock;
+                const newStock =
+                    item.item_detail.stock +
+                    (prevQuantity - Number(newQuantity));
+                const isInputValid = newQuantity <= item.item_detail.stock;
+                const hasQuantityChanged = prevQuantity !== Number(newQuantity);
+                const showButton = hasQuantityChanged && isInputValid;
+                return {
+                    ...item,
+                    quantity: Number(newQuantity),
+                    newStock: newStock,
+                    prevStock: prevStock,
+                    showButton: showButton,
+                };
+            } else {
+                return item;
+            }
+        });
+        setChangedItemId(itemId);
+        setItems(
+            updatedItems.map((item) => {
+                if (item.id === itemId) {
+                    const hasQuantityChanged =
+                        item.quantity !== item.item_detail.stock;
+                    const exceedLimit = item.quantity >= item.item_detail.stock;
+                    const showAlert = hasQuantityChanged && exceedLimit;
+                    return {
+                        ...item,
+                        item_detail: {
+                            ...item.item_detail,
+                            stock: item.newStock,
+                        },
+                        showAlert: showAlert,
+                    };
+                } else {
+                    return item;
+                }
+            })
+        );
+    }
+
+    console.log("items", items);
     //console.log("item id outside", changedItemId);
     /*
     function handleQuantityChange(itemId, newQuantity) {
@@ -359,6 +415,12 @@ const ItemCart = () => {
                                         </thead>
                                         {items.map((item) => (
                                             <tbody key={item.id}>
+                                                {item.showAlert && (
+                                                    <Alert variant="danger">
+                                                        Stock limit is{" "}
+                                                        {item.prevStock}
+                                                    </Alert>
+                                                )}
                                                 <tr>
                                                     <td>
                                                         <Row>
@@ -401,7 +463,7 @@ const ItemCart = () => {
                                                                                     max={
                                                                                         item
                                                                                             .item_detail
-                                                                                            .stock_limit
+                                                                                            .stock
                                                                                     }
                                                                                     value={
                                                                                         item.quantity
