@@ -14,6 +14,7 @@ import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import InputGroup from "react-bootstrap/InputGroup";
 import Spinner from "react-bootstrap/Spinner";
+import Alert from "react-bootstrap/Alert";
 import SavedItem from "../components/SavedItem";
 import AuthContext from "../context/AuthContext";
 import { config } from "../Constants";
@@ -32,6 +33,9 @@ const OrderItems = () => {
     const [itemDetailList, setItemDetailList] = useState([]);
     //const [number, setNumber] = useState(1);
     const [total, setTotal] = useState(0);
+    const [totalSum, setTotalSum] = useState(0);
+    const [shippingSum, setShippingSum] = useState(0);
+    const [taxSum, setTaxSum] = useState(0);
     const [shippingInfo, setShippingInfo] = useState([]);
     const [billingInfo, setBillingInfo] = useState([]);
     const [itemIdNum, setItemidNum] = useState([]);
@@ -41,6 +45,8 @@ const OrderItems = () => {
     //const [showButton, setShowButton] = useState(false);
     const stripe = useStripe();
     const elements = useElements();
+
+    const caTaxRateSum = 7.25 / 100;
 
     useEffect(() => {
         getOrderedItems();
@@ -78,6 +84,7 @@ const OrderItems = () => {
         };
         const response = await fetch(`${url}/order/`, requestOptions);
         const data = await response.json();
+        console.log("data", data);
         const dataItems = data.order_items;
 
         setOrder(data);
@@ -86,7 +93,30 @@ const OrderItems = () => {
         //    setItemDetailList(item.order_items.item_detail)
         //);
 
-        const allTotal = data.map((item) => setTotal(item.get_total));
+        //const allTotal = data.map((item) => setTotal(item.get_total));
+        const allTotal = data.map((item) => item.get_total);
+
+        const convertTotalToNumber = parseFloat(allTotal);
+        console.log("string to num", convertTotalToNumber);
+        setTotalSum(convertTotalToNumber);
+
+        const orderId = order.id;
+        console.log("order id", orderId);
+        //const allTotal = data.get_total;
+
+        const allTotalShipping = convertTotalToNumber + shipping;
+        console.log("all total shipping", allTotalShipping);
+        setShippingSum(allTotalShipping);
+
+        const fullTaxSum = caTaxRateSum * allTotalShipping;
+        console.log("tax sum", fullTaxSum);
+        setTaxSum(fullTaxSum);
+
+        const fullTotalSum = allTotalShipping + fullTaxSum;
+        console.log("full sum", fullTotalSum);
+
+        setTotal(fullTotalSum);
+
         const info = data.map((customer) => customer.get_address);
         if (items != null) {
             const numItems = items.map((item) => item.quantity);
@@ -97,10 +127,12 @@ const OrderItems = () => {
         //setNumberOfItems(getNumItems);
         setCustomerInfo(info);
 
-        setTimeout(() => {
+        const fullTotal = setTimeout(() => {
             setSpinner(false);
         }, 2000);
     };
+    console.log("totalSum", totalSum);
+    console.log("total", total);
 
     //const getNumItems = items.map((item) => item.quantity);
     //console.log("num of items", getNumItems);
@@ -127,7 +159,44 @@ const OrderItems = () => {
 
     const removeItem = async (id) => {
         const newList = items.filter((item) => item.id !== id);
+
+        const remainingPrices = newList.map(
+            (item) => item.get_total_item_price
+        );
+        //console.log("remaining prices", remainingPrices);
+
+        const stringToNum = remainingPrices.map((str) => {
+            return Number(str);
+        });
+        //console.log("string to num", stringToNum);
+
+        const remainingTotalPrice = stringToNum.reduce(
+            (total, item) => total + item,
+            0
+        );
+        //console.log("remaining total price", remainingTotalPrice);
+
+        setTotalSum(remainingTotalPrice.toFixed(2));
+
+        const allTotalShipping = remainingTotalPrice + shipping;
+        //console.log("allTotalShipping", allTotalShipping);
+
+        setShippingSum(allTotalShipping);
+
+        const fullTaxSum = caTaxRateSum * allTotalShipping;
+        //console.log("full tax sum", fullTaxSum);
+
+        setTaxSum(fullTaxSum);
+
+        setTotal(allTotalShipping + fullTaxSum);
+
         setItems(newList);
+
+        //1.46
+        //1.44
+        //1.45
+        //1.45
+        //1.45
     };
 
     const updateItemAPIs = (ids) => {
@@ -171,6 +240,7 @@ const OrderItems = () => {
     }
     */
 
+    /*
     function handleQuantityChange(itemId, newQuantity) {
         //setShowButton(true);
         const updatedItems = items.map((item) => {
@@ -195,10 +265,73 @@ const OrderItems = () => {
         setChangedItemId(itemId);
         setItems(updatedItems);
     }
+    */
+
+    function handleQuantityChange(itemId, newQuantity) {
+        //setShowButton(true);
+        const updatedItems = items.map((item) => {
+            if (item.id === itemId) {
+                //setIsInputValid(newQuantity < item.item_detail.stock_limit);
+                const prevQuantity = Number(item.quantity);
+                const prevStock = item.item_detail.stock;
+                const newStock =
+                    item.item_detail.stock +
+                    (prevQuantity - Number(newQuantity));
+                //const isInputValid =
+                //    newQuantity <= item.quantity + item.item_detail.stock;
+                //const hasQuantityChanged = prevQuantity !== Number(newQuantity);
+                const showButton = prevQuantity !== Number(newQuantity);
+                return {
+                    ...item,
+                    quantity: Number(newQuantity),
+                    newStock: newStock,
+                    prevQuantity: prevQuantity,
+                    prevStock: prevStock,
+                    showButton: showButton,
+                };
+            } else {
+                return item;
+            }
+        });
+        setChangedItemId(itemId);
+        setItems(
+            updatedItems.map((item) => {
+                if (item.id === itemId) {
+                    //const hasQuantityChanged =
+                    //    item.quantity !== item.item_detail.stock;
+                    //const exceedLimit = item.quantity > item.item_detail.stock;
+                    //const showAlert = hasQuantityChanged && exceedLimit;
+                    return {
+                        ...item,
+                        item_detail: {
+                            ...item.item_detail,
+                            stock: item.newStock,
+                        },
+                        //showAlert: showAlert,
+                    };
+                } else {
+                    return item;
+                }
+            })
+        );
+    }
 
     const handleSubmit = async (e, orderId, itemOrderId) => {
         e.preventDefault();
         const singleOrder = items.find((item) => item.id === changedItemId);
+        if (
+            singleOrder.quantity >
+            singleOrder.quantity + singleOrder.item_detail.stock
+        ) {
+            const updatedItems = items.map((item) =>
+                item.id === singleOrder.id
+                    ? { ...item, alertShown: true }
+                    : item
+            );
+            setItems(updatedItems);
+            //setShowAlert(true);
+            return;
+        }
 
         if (singleOrder.quantity === 0) {
             handleDelete(e, singleOrder.id, singleOrder.item_detail.id);
@@ -278,6 +411,7 @@ const OrderItems = () => {
             body: JSON.stringify({
                 ordered: true,
                 ordered_date: date,
+                total: total,
                 payment_method_id: paymentMethod.id,
             }),
         };
@@ -318,17 +452,17 @@ const OrderItems = () => {
         },
     };
 
-    const convertTotalToNum = parseFloat(total);
+    //const convertTotalToNum = parseFloat(total);
 
-    const totalSum = convertTotalToNum + shipping;
+    //const totalSum = convertTotalToNum + shipping;
     //console.log("totalSum", totalSum);
     //console.log("total", convertTotalToNum);
     //console.log("shipping", shipping);
 
-    const caTaxRateSum = (7.25 / 100) * totalSum;
+    //const caTaxRateSum = (7.25 / 100) * totalSum;
     //console.log("tax rate", caTaxRateSum);
 
-    const fullTotalSum = totalSum + caTaxRateSum;
+    //const fullTotalSum = totalSum + caTaxRateSum;
     //console.log("full sum", fullTotalSum);
 
     // Order items
@@ -383,6 +517,17 @@ const OrderItems = () => {
                                 <h4 className="mb-3">Review Items</h4>
                                 {items.map((item) => (
                                     <div key={item.id}>
+                                        {" "}
+                                        {item.alertShown && (
+                                            <Alert
+                                                id={item.id}
+                                                variant="danger"
+                                            >
+                                                Stock limit is{" "}
+                                                {item.prevQuantity +
+                                                    item.prevStock}
+                                            </Alert>
+                                        )}
                                         <Card className="mb-2" key={item.id}>
                                             <Container>
                                                 <Row className="purchase-item-info">
@@ -507,7 +652,7 @@ const OrderItems = () => {
                                 <Container>
                                     <h3>Order Summary</h3>
                                     <div className="order-sum-p">
-                                        <p>Items Total</p> <p> {total}</p>
+                                        <p>Items Total</p> <p>${totalSum}</p>
                                     </div>
                                     <div className="order-sum-p">
                                         <p>Shipping and Handling</p>{" "}
@@ -515,18 +660,16 @@ const OrderItems = () => {
                                     </div>
                                     <div className="order-sum-p">
                                         <p>Total before tax:</p>{" "}
-                                        <p>{totalSum.toFixed(2)}</p>
+                                        <p>${shippingSum.toFixed(2)}</p>
                                     </div>
                                     <div className="order-sum-p">
                                         <p>Estimated tax to be collected:</p>
-                                        <p>{caTaxRateSum.toFixed(2)}</p>
+                                        <p>${taxSum.toFixed(2)}</p>
                                     </div>
                                 </Container>
                                 <hr />
                                 <div className="order-sum-content">
-                                    <h5>
-                                        Order total: {fullTotalSum.toFixed(2)}
-                                    </h5>
+                                    <h5>Order total: ${total.toFixed(2)}</h5>
                                 </div>
                                 <hr />
                                 <Container>

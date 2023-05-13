@@ -80,6 +80,7 @@ const ItemCart = () => {
 
         const response = await fetch(`${url}/order-item/`, requestOptions);
         const data = await response.json();
+        console.log("data", data);
         const itemDetail = data.map((item) => item.item_detail);
         const itemTotal = data.map((item) => item.get_total_item_price);
         const stringToNum = itemTotal.map((str) => {
@@ -139,7 +140,21 @@ const ItemCart = () => {
 
     function removeItem(id) {
         const newList = items.filter((item) => item.id !== id);
+
+        const itemTotal = newList.map((item) => item.get_total_item_price);
+
+        const stringToNum = itemTotal.map((str) => {
+            return Number(str);
+        });
+
+        const totalPrice = stringToNum.reduce((total, item) => total + item, 0);
+        setTotal(totalPrice.toFixed(2));
+
+        //const updatePriceList = newList.map((item) =>
+        //    item.id === id ? { ...item, get_total_item_price: 0 } : item
+        //);
         setItems(newList);
+        return;
     }
     /*
     const handleSelect = (id, value) => {
@@ -280,7 +295,13 @@ const ItemCart = () => {
             singleOrder.quantity >
             singleOrder.quantity + singleOrder.item_detail.stock
         ) {
-            setShowAlert(true);
+            const updatedItems = items.map((item) =>
+                item.id === singleOrder.id
+                    ? { ...item, alertShown: true }
+                    : item
+            );
+            setItems(updatedItems);
+            //setShowAlert(true);
             return;
         }
 
@@ -308,13 +329,14 @@ const ItemCart = () => {
                 const data = await response.json();
 
                 //if (!data.detail) {
-                setShowAlert(false);
+                //setShowAlert(false);
                 getCartItems();
                 //}
             } else {
                 throw new Error(
                     "Item's stock limit is " +
                         singleOrder.item_detail.stock +
+                        singleOrder.quantity +
                         "."
                 );
             }
@@ -425,7 +447,7 @@ const ItemCart = () => {
                                         </thead>
                                         {items.map((item) => (
                                             <tbody key={item.id}>
-                                                {showAlert && (
+                                                {item.alertShown && (
                                                     <Alert
                                                         id={item.id}
                                                         variant="danger"

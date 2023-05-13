@@ -243,7 +243,8 @@ class OrderViewSet(viewsets.ModelViewSet):
         # read data from request
         self.request.data.get("ordered", None)
         payment_method_id = self.request.data.get('payment_method_id', None)
-        #print(instance.query)
+        full_amount = self.request.data.get('total', None)
+        print(f"full_amount {full_amount}")
         ##updated_instance = serializer.save()
         #print(f"updated data {updated_instance}")
 
@@ -271,7 +272,7 @@ class OrderViewSet(viewsets.ModelViewSet):
             customer=single_main_order.customer.stripe_customer_id,
             payment_method=payment_method_id,
             currency='usd',
-            amount=int(single_main_order.get_total() * 100),
+            amount=int(full_amount * 100),
             confirm=True
         )
         single_main_order.stripe_charge_id = stripe_payment_intent.latest_charge
