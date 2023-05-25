@@ -84,7 +84,6 @@ const OrderItems = () => {
         };
         const response = await fetch(`${url}/order/`, requestOptions);
         const data = await response.json();
-        console.log("data", data);
         const dataItems = data.order_items;
 
         setOrder(data);
@@ -97,23 +96,18 @@ const OrderItems = () => {
         const allTotal = data.map((item) => item.get_total);
 
         const convertTotalToNumber = parseFloat(allTotal);
-        console.log("string to num", convertTotalToNumber);
         setTotalSum(convertTotalToNumber);
 
         const orderId = order.id;
-        console.log("order id", orderId);
         //const allTotal = data.get_total;
 
         const allTotalShipping = convertTotalToNumber + shipping;
-        console.log("all total shipping", allTotalShipping);
         setShippingSum(allTotalShipping);
 
         const fullTaxSum = caTaxRateSum * allTotalShipping;
-        console.log("tax sum", fullTaxSum);
         setTaxSum(fullTaxSum);
 
         const fullTotalSum = allTotalShipping + fullTaxSum;
-        console.log("full sum", fullTotalSum);
 
         setTotal(fullTotalSum);
 
@@ -131,8 +125,6 @@ const OrderItems = () => {
             setSpinner(false);
         }, 2000);
     };
-    console.log("totalSum", totalSum);
-    console.log("total", total);
 
     //const getNumItems = items.map((item) => item.quantity);
     //console.log("num of items", getNumItems);
@@ -432,7 +424,7 @@ const OrderItems = () => {
             setError(null);
         }
     };
-
+    /*
     const inputStyle = {
         iconColor: "#c4f0ff",
         color: "#fff",
@@ -449,6 +441,22 @@ const OrderItems = () => {
         invalid: {
             iconColor: "#FFC7EE",
             color: "#FFC7EE",
+        },
+    };
+    */
+
+    const cardElementOptions = {
+        style: {
+            base: {
+                fontSize: "16px",
+                color: "#32325d",
+                "::placeholder": {
+                    color: "#aab7c4",
+                },
+            },
+            invalid: {
+                color: "#fa755a",
+            },
         },
     };
 
@@ -680,6 +688,7 @@ const OrderItems = () => {
                                             </label>
                                             <CardElement
                                                 id="card-element"
+                                                options={cardElementOptions}
                                                 onChange={handleChange}
                                             />
                                             <div

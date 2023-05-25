@@ -80,7 +80,6 @@ const ItemCart = () => {
 
         const response = await fetch(`${url}/order-item/`, requestOptions);
         const data = await response.json();
-        console.log("data", data);
         const itemDetail = data.map((item) => item.item_detail);
         const itemTotal = data.map((item) => item.get_total_item_price);
         const stringToNum = itemTotal.map((str) => {
@@ -254,7 +253,6 @@ const ItemCart = () => {
         );
     }
 
-    console.log("items", items);
     //console.log("item id outside", changedItemId);
     /*
     function handleQuantityChange(itemId, newQuantity) {

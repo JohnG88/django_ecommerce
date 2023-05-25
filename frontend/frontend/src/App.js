@@ -42,18 +42,17 @@ function App() {
                             {/*<Route path="/" element={<App />}>*/}
                             <Route path="login" element={<LoginA />} />
                             <Route path="register" element={<Register />} />
-                            <Route path="/" element={<HomePage />} />
-
+                            <Route path="/" element={<HomePage />} />{" "}
+                            <Route
+                                path="/detail/:detailId/"
+                                element={<Detail />}
+                            />
                             <Route path="/" element={<PrivateRoute />}>
                                 <Route
                                     path="dashboard"
                                     element={<Dashboard />}
                                 />
                                 <Route path="profile" element={<Profile />} />
-                                <Route
-                                    path="/detail/:detailId/"
-                                    element={<Detail />}
-                                />
 
                                 <Route
                                     path="/order-item/"
